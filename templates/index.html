@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ER Triage — Predict</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f9fc;
+      --white:     #ffffff;
+      --card:      #ffffff;
+      --border:    #e8edf5;
+      --text:      #1a2340;
+      --muted:     #7a8aab;
+      --light:     #f0f4fb;
+      --teal:      #2dd4bf;
+      --teal-dk:   #14b8a6;
+      --teal-lt:   rgba(45,212,191,0.10);
+      --red:       #e63946;
+      --red-dk:    #c1121f;
+      --red-lt:    rgba(230,57,70,0.09);
+      --orange:    #f4a261;
+      --orange-lt: rgba(244,162,97,0.10);
+      --input-bg:  #f7f9fc;
+      --shadow:    0 2px 20px rgba(26,35,64,0.07);
+      --shadow-md: 0 6px 32px rgba(26,35,64,0.11);
+    }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── decorative top bar ── */
+    .top-bar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--teal), var(--red), var(--orange));
+    }
+
+    /* ── nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 2.5rem;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(26,35,64,0.05);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dk));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 3px 10px rgba(45,212,191,0.35);
+    }
+    .nav-logo .em { color: var(--red); }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: var(--teal-dk); }
+    .breadcrumb .sep { opacity: 0.4; }
+    .breadcrumb .current { color: var(--text); font-weight: 700; }
+    .nav-back {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .nav-back:hover { border-color: var(--teal); color: var(--teal-dk); background: var(--teal-lt); }
+
+    /* ── main layout ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* ── page header ── */
+    .page-header {
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .page-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--red-lt);
+      border: 1px solid rgba(230,57,70,0.2);
+      color: var(--red);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      padding: 5px 15px;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.7rem, 3.5vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+    }
+    .page-header h1 em {
+      font-style: italic;
+      color: var(--red);
+    }
+    .page-header p { color: var(--muted); font-size: 0.92rem; }
+
+    /* ── form card ── */
+    .form-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 2.2rem;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal-dk);
+      margin-bottom: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: var(--border);
+    }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .input-wrap { position: relative; }
+    .input-unit {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--teal-dk);
+      pointer-events: none;
+      background: var(--teal-lt);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    input, select {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.78rem 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    input.has-unit { padding-right: 4rem; }
+    input:focus, select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
+      background: var(--white);
+    }
+    input::placeholder { color: #c5cfe0; }
+
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 0.8rem;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* ── submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, var(--red), var(--red-dk));
+      color: #fff;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 24px rgba(230,57,70,0.3);
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(230,57,70,0.45); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── error box ── */
+    .error-box {
+      margin-top: 1.5rem;
+      background: var(--red-lt);
+      border: 1.5px solid rgba(230,57,70,0.25);
+      color: var(--red);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    /* ── result ── */
+    .result-wrap { margin-top: 2rem; }
+    .result-header {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal-dk);
+      margin-bottom: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .result-header::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: var(--border);
+    }
+
+    .result-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-radius: 18px;
+      padding: 1.6rem 1.8rem;
+      border: 1.5px solid;
+    }
+    .result-box.l0,.result-box.l1 { background:#edfcf9; border-color:rgba(45,212,191,0.4); }
+    .result-box.l2 { background:#fffbf0; border-color:rgba(244,162,97,0.4); }
+    .result-box.l3 { background:#fff5f5; border-color:rgba(230,57,70,0.35); }
+
+    .result-level {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .result-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .l0 .result-text,.l1 .result-text { color: var(--teal-dk); }
+    .l2 .result-text { color: #c07c43; }
+    .l3 .result-text { color: var(--red); }
+
+    .confidence-block {
+      text-align: center;
+      background: var(--white);
+      border-radius: 14px;
+      padding: 1rem 1.4rem;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+    .conf-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text);
+    }
+    .conf-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── input summary ── */
+    .summary {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 1.3rem 1.5rem;
+      margin-top: 1.2rem;
+    }
+    .summary-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 0.8rem;
+    }
+    .summary-item {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .summary-item strong { color: var(--text); display: block; font-size: 0.88rem; font-weight: 800; margin-top: 2px; }
+
+    /* ── legend ── */
+    .legend {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--card);
+      padding: 5px 14px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+    .dot.g { background: var(--teal); }
+    .dot.y { background: var(--orange); }
+    .dot.r { background: var(--red); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    @media (max-width: 560px) {
+      nav { padding: 1rem 1.2rem; }
+      .breadcrumb { display: none; }
+      .grid { grid-template-columns: 1fr; }
+      .full { grid-column: 1; }
+      .form-card { padding: 1.5rem 1.2rem; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<!-- Nav -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-icon">🏥</div>
+    <span><span class="em">ER</span>Triage<span class="em">AI</span></span>
+  </a>
+  <div class="breadcrumb">
+    <a href="/">Dashboard</a>
+    <span class="sep">/</span>
+    <span class="current">Predict</span>
+  </div>
+  <a href="/" class="nav-back">← Back</a>
+</nav>
+
+<!-- Page -->
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-badge">🩺 Patient Assessment</div>
+    <h1>Triage <em>Prediction</em></h1>
+    <p>Fill in the patient's vitals below and click Predict to get the triage classification.</p>
+  </div>
+
+  <div class="form-card">
+    <form action="/predict" method="POST">
+
+      <div class="section-label">Vital Signs</div>
+      <div class="grid">
+
+        <div class="field">
+          <label for="age">Age</label>
+          <div class="input-wrap">
+            <input class="has-unit" type="number" id="age" name="age"
+                   placeholder="45" min="0" max="120" step="1" required
+                   value="{{ input_data.age if input_data else '' }}"/>
+            <span class="input-unit">yrs</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="heart_rate">Heart Rate</label>
+          <div class="input-wrap">
+            <input class="has-unit" type="number" id="heart_rate" name="heart_rate"
+                   placeholder="82" min="20" max="250" step="1" required
+                   value="{{ input_data.heart_rate if input_data else '' }}"/>
+            <span class="input-unit">bpm</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="systolic_blood_pressure">Systolic BP</label>
+          <div class="input-wrap">
+            <input class="has-unit" type="number" id="systolic_blood_pressure" name="systolic_blood_pressure"
+                   placeholder="120" min="50" max="300" step="1" required
+                   value="{{ input_data.systolic_blood_pressure if input_data else '' }}"/>
+            <span class="input-unit">mmHg</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="oxygen_saturation">Oxygen Saturation</label>
+          <div class="input-wrap">
+            <input class="has-unit" type="number" id="oxygen_saturation" name="oxygen_saturation"
+                   placeholder="98" min="50" max="100" step="0.1" required
+                   value="{{ input_data.oxygen_saturation if input_data else '' }}"/>
+            <span class="input-unit">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="body_temperature">Body Temperature</label>
+          <div class="input-wrap">
+            <input class="has-unit" type="number" id="body_temperature" name="body_temperature"
+                   placeholder="37.2" min="30" max="45" step="0.1" required
+                   value="{{ input_data.body_temperature if input_data else '' }}"/>
+            <span class="input-unit">°C</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="pain_level">Pain Level (1–10)</label>
+          <input type="number" id="pain_level" name="pain_level"
+                 placeholder="5" min="1" max="10" step="1" required
+                 value="{{ input_data.pain_level if input_data else '' }}"/>
+        </div>
+
+      </div>
+
+      <hr class="divider"/>
+      <div class="section-label">History &amp; Arrival</div>
+      <div class="grid">
+
+        <div class="field">
+          <label for="chronic_disease_count">Chronic Disease Count</label>
+          <input type="number" id="chronic_disease_count" name="chronic_disease_count"
+                 placeholder="2" min="0" max="20" step="1" required
+                 value="{{ input_data.chronic_disease_count if input_data else '' }}"/>
+        </div>
+
+        <div class="field">
+          <label for="previous_er_visits">Previous ER Visits</label>
+          <input type="number" id="previous_er_visits" name="previous_er_visits"
+                 placeholder="1" min="0" max="50" step="1" required
+                 value="{{ input_data.previous_er_visits if input_data else '' }}"/>
+        </div>
+
+        <div class="field full">
+          <label for="arrival_mode">Arrival Mode</label>
+          <div class="select-wrap">
+            <select id="arrival_mode" name="arrival_mode" required>
+              <option value="" disabled {% if not input_data %}selected{% endif %}>Select arrival mode…</option>
+              <option value="Walk-in"   {% if input_data and input_data.arrival_mode == 'Walk-in'   %}selected{% endif %}>🚶 Walk-in</option>
+              <option value="Ambulance" {% if input_data and input_data.arrival_mode == 'Ambulance' %}selected{% endif %}>🚑 Ambulance</option>
+              <option value="Referred"  {% if input_data and input_data.arrival_mode == 'Referred'  %}selected{% endif %}>📋 Referred</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <hr class="divider"/>
+      <button type="submit" class="btn-submit">⚡ Predict Triage Level</button>
+    </form>
+
+    <!-- Error -->
+    {% if error %}
+    <div class="error-box">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <!-- Result -->
+    {% if prediction_text %}
+    {% set lvl = prediction_text[6] | int %}
+    <div class="result-wrap">
+      <div class="result-header">Prediction Result</div>
+      <div class="result-box l{{ lvl }}">
+        <div class="result-left">
+          <div class="result-level">Priority Classification</div>
+          <div class="result-text">{{ prediction_text }}</div>
+        </div>
+        <div class="confidence-block">
+          <div class="conf-val">{{ probability }}%</div>
+          <div class="conf-label">Confidence</div>
+        </div>
+      </div>
+
+      {% if input_data %}
+      <div class="summary">
+        <div class="summary-title">Input Summary</div>
+        <div class="summary-grid">
+          <div class="summary-item">Age<strong>{{ input_data.age }} yrs</strong></div>
+          <div class="summary-item">Heart Rate<strong>{{ input_data.heart_rate }} bpm</strong></div>
+          <div class="summary-item">Systolic BP<strong>{{ input_data.systolic_blood_pressure }} mmHg</strong></div>
+          <div class="summary-item">SpO₂<strong>{{ input_data.oxygen_saturation }}%</strong></div>
+          <div class="summary-item">Temperature<strong>{{ input_data.body_temperature }}°C</strong></div>
+          <div class="summary-item">Pain Level<strong>{{ input_data.pain_level }}/10</strong></div>
+          <div class="summary-item">Chronic Diseases<strong>{{ input_data.chronic_disease_count }}</strong></div>
+          <div class="summary-item">ER Visits<strong>{{ input_data.previous_er_visits }}</strong></div>
+          <div class="summary-item">Arrival<strong>{{ input_data.arrival_mode }}</strong></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /form-card -->
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="dot g"></div>L0 Non-Urgent</div>
+    <div class="legend-item"><div class="dot g"></div>L1 Less Urgent</div>
+    <div class="legend-item"><div class="dot y"></div>L2 Urgent</div>
+    <div class="legend-item"><div class="dot r"></div>L3 Life-threatening</div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>
