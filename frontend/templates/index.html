@@ -38,6 +38,18 @@
       overflow-x: hidden;
     }
 
+    /* AUTH LOGIC */
+    <script>
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+          window.location.href = 'login.html';
+      }
+      function logout() {
+          localStorage.removeItem('access_token');
+          window.location.href = 'login.html';
+      }
+    </script>
+
     /* ── decorative top bar ── */
     .top-bar {
       height: 4px;
@@ -428,7 +440,10 @@
     <span class="sep">/</span>
     <span class="current">Predict</span>
   </div>
-  <a href="/" class="nav-back">← Back</a>
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <a href="/" class="nav-back">← Dashboard</a>
+    <button onclick="logout()" class="nav-back" style="cursor: pointer; background: var(--bg);">Logout</button>
+  </div>
 </nav>
 
 <!-- Page -->

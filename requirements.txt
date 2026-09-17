@@ -14,9 +14,12 @@ langchain-core
 langgraph
 chromadb
 groq
+langchain-groq
 google-genai
 python-multipart
 python-dotenv
-
 langchain-community
 pypdf
+SQLAlchemy
+passlib[bcrypt]
+python-jose[cryptography]

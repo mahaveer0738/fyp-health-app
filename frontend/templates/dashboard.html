@@ -25,6 +25,18 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; }
 
+    /* AUTH LOGIC */
+    <script>
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+          window.location.href = 'login.html';
+      }
+      function logout() {
+          localStorage.removeItem('access_token');
+          window.location.href = 'login.html';
+      }
+    </script>
+    
     /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
@@ -303,7 +315,10 @@
     <li><a href="#pipeline">Model</a></li>
     <li><a href="#levels">Levels</a></li>
   </ul>
-  <a href="/predict" class="nav-cta">Start Prediction</a>
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <a href="/predict" class="nav-cta">Start Prediction</a>
+    <button onclick="logout()" class="btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.75rem;">Logout</button>
+  </div>
 </nav>
 
 <!-- HERO -->

@@ -21,6 +21,10 @@ class AgentState(TypedDict):
     image_bytes: Optional[bytes]
     user_location: str  # Added for tools to use
     
+    # Patient Data Context (Loaded from DB)
+    patient_profile: Optional[dict]
+    visit_history: List[dict]
+    
     # Intermediates
     ocr_text: Optional[str]
     ml_prediction: Optional[PredictionResponse]
