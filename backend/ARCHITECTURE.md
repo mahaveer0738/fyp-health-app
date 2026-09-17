@@ -51,8 +51,10 @@ This complex loop is what makes it a true Agent, not just a chatbot!
 ```mermaid
 graph TD
     %% Entry
-    Input[/User: Symptoms + Vitals + Photo/] --> START(((START)))
-    START --> N1
+    Input[/Authenticated User Input/] --> START(((START)))
+    START --> AuthCheck
+    
+    AuthCheck[(Fetch Patient Profile & History<br>SQLite DB)] --> N1
 
     %% Sequential Data Prep Pipeline
     subgraph "Data Preparation"
@@ -72,7 +74,8 @@ graph TD
     end
 
     %% Exit
-    N4 -- "Final Answer" --> END(((END)))
+    N4 -- "Final Answer" --> SaveVisit
+    SaveVisit[(Save Visit to History<br>SQLite DB)] --> END(((END)))
     
     %% Post-Graph Processes
     END --> Email[Send Visit Summary Email via Resend API]
