@@ -53,43 +53,41 @@ graph TD
     %% Entry
     Input[/Authenticated User Input/] --> START(((START)))
     START:::startend --> AuthCheck
-    
+
     AuthCheck[Fetch Patient Profile & Past History]:::db --> N1
 
     %% Sequential Data Prep Pipeline
-    subgraph Data Preparation
+    subgraph "Data Preparation"
         N1[prepare_vitals_node<br>Runs ML Random Forest]:::datanode --> N2
         N2[ocr_node<br>Vision Extraction]:::datanode --> N3
         N3[retrieval_node<br>Queries ChromaDB]:::datanode
     end
-    
+
     N3 --> N4
-    
+
     %% The ReAct Agent Loop
-    subgraph The Agentic Loop
+    subgraph "The Agentic Loop"
         N4{chatbot_node<br>Groq LLM Reasoning}:::agentnode
-        
         N4 -- "Requires Tool" --> N5[ToolNode<br>Executes Function]:::toolnode
         N5 -- "Returns Result" --> N4
     end
-    
+
     %% Exit
     N4 -- "Final Answer" --> SaveVisit
-    SaveVisit[Save Visit to SQLite History]:::db --> END(((END))):startend
-    END --> Output[/Response sent to User/]
+    SaveVisit[Save Visit to SQLite History]:::db --> END(((END)))
+    END:::startend --> Output[/Response sent to User/]
 
     %% Tool Definitions
-    subgraph External APIs
+    subgraph "External APIs"
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
         T3[[email_alert<br>Resend API]]
     end
-    
+
     N5 -.-> T1
     N5 -.-> T2
     N5 -.-> T3
 ```
-
 ---
 
 ## 🚀 User Guide: How to Run the App
