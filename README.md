@@ -78,7 +78,7 @@ graph TD
     END:::startend --> Output[/Response sent to User/]
 
     %% Tool Definitions
-    subgraph External APIs
+    subgraph "External APIs"
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
     end
