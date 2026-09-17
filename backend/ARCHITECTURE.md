@@ -84,10 +84,8 @@ graph TD
     subgraph Available Tools (backend/agent/tools/)
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
-        T3[[email_alert<br>Resend API]]
     end
     
     N5 -.-> T1
     N5 -.-> T2
-    N5 -.-> T3
 ```
