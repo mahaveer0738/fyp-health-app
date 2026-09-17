@@ -48,7 +48,7 @@ graph TD
     Input[/Authenticated User Input/] --> START(((START)))
     START --> AuthCheck
 
-    AuthCheck[Fetch Patient Profile & Past History] --> N1
+    AuthCheck[(Fetch Patient Profile & Past History<br>SQLite DB)] --> N1
 
     %% Sequential Data Prep Pipeline
     subgraph "Data Preparation"
@@ -68,7 +68,7 @@ graph TD
 
     %% Exit
     N4 -- "Final Answer" --> SaveVisit
-    SaveVisit[Save Visit to SQLite History] --> END(((END)))
+    SaveVisit[(Save Visit to History<br>SQLite DB)] --> END(((END)))
     
     %% Post-Graph Processes
     END --> Email[Send Visit Summary Email via Resend]
