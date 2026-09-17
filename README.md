@@ -44,38 +44,35 @@ The backbone of this project is built on **LangGraph**. The workflow acts as a s
 
 ```mermaid
 graph TD
-    classDef startend fill:#0f172a,stroke:#333,stroke-width:2px,color:white;
-    classDef datanode fill:#e2e8f0,stroke:#64748b,stroke-width:2px,color:#0f172a;
-    classDef agentnode fill:#2563eb,stroke:#1d4ed8,stroke-width:3px,color:white;
-    classDef toolnode fill:#10b981,stroke:#047857,stroke-width:2px,color:white;
-    classDef db fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:white;
-
     %% Entry
     Input[/Authenticated User Input/] --> START(((START)))
-    START:::startend --> AuthCheck
+    START --> AuthCheck
 
-    AuthCheck[Fetch Patient Profile & Past History]:::db --> N1
+    AuthCheck[Fetch Patient Profile & Past History] --> N1
 
     %% Sequential Data Prep Pipeline
     subgraph "Data Preparation"
-        N1[prepare_vitals_node<br>Runs ML Random Forest]:::datanode --> N2
-        N2[ocr_node<br>Vision Extraction]:::datanode --> N3
-        N3[retrieval_node<br>Queries ChromaDB]:::datanode
+        N1[prepare_vitals_node<br>Runs ML Random Forest] --> N2
+        N2[ocr_node<br>Vision Extraction] --> N3
+        N3[retrieval_node<br>Queries ChromaDB]
     end
 
     N3 --> N4
 
     %% The ReAct Agent Loop
     subgraph "The Agentic Loop"
-        N4{chatbot_node<br>Groq LLM Reasoning}:::agentnode
-        N4 -- "Requires Tool" --> N5[ToolNode<br>Executes Function]:::toolnode
+        N4{chatbot_node<br>Groq LLM Reasoning}
+        N4 -- "Requires Tool" --> N5[ToolNode<br>Executes Function]
         N5 -- "Returns Result" --> N4
     end
 
     %% Exit
     N4 -- "Final Answer" --> SaveVisit
-    SaveVisit[Save Visit to SQLite History]:::db --> END(((END)))
-    END:::startend --> Output[/Response sent to User/]
+    SaveVisit[Save Visit to SQLite History] --> END(((END)))
+    
+    %% Post-Graph Processes
+    END --> Email[Send Visit Summary Email via Resend]
+    END --> Output[/Response sent to User/]
 
     %% Tool Definitions
     subgraph "External APIs"
