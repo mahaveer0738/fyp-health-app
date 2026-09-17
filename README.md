@@ -32,6 +32,10 @@
 - **Persistent SQLite Database**: Stores user accounts, patient profiles (age, gender, chronic conditions).
 - **Long-term Agent Memory**: The agent remembers past visit history and automatically references it in new conversations.
 
+### 🚨 4. Automated Emergency Email Alerts
+- If the AI or the ML model detects a "Level 2" or "Level 3" urgent triage risk, it autonomously drafts and sends an **Emergency Email** to the patient.
+- Uses the **Resend API** to dynamically deliver personalized medical risks and addresses of nearby hospitals without prompting the user.
+
 ---
 
 ## 🏗️ System Architecture
@@ -78,10 +82,12 @@ graph TD
     subgraph External APIs
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
+        T3[[email_alert<br>Resend API]]
     end
     
     N5 -.-> T1
     N5 -.-> T2
+    N5 -.-> T3
 ```
 
 ---
@@ -126,8 +132,8 @@ Want to know how the internals work? We have detailed documentation in the `back
 
 While this project is fully functional, there are several exciting features planned for future iterations:
 
-1. **Google OAuth2 Single Sign-On (SSO)**
-   - *Plan:* Allow users to bypass traditional email/password registration by clicking "Sign in with Google".
+1. **Gmail / Google OAuth2 Single Sign-On (SSO)**
+   - *Plan:* Allow users to bypass traditional email/password registration by clicking "Sign in with Google" (Gmail Login).
    - *Why:* Simplifies user onboarding and relies on enterprise-grade Google security for authentication.
    
 2. **HTTPS & Secure Cookies**
