@@ -20,6 +20,7 @@ class AgentState(TypedDict):
     symptoms_text: str
     image_bytes: Optional[bytes]
     user_location: str  # Added for tools to use
+    user_email: Optional[str]
     
     # Patient Data Context (Loaded from DB)
     patient_profile: Optional[dict]

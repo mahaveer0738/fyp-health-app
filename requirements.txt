@@ -23,3 +23,4 @@ pypdf
 SQLAlchemy
 passlib[bcrypt]
 python-jose[cryptography]
+resend

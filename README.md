@@ -32,9 +32,9 @@
 - **Persistent SQLite Database**: Stores user accounts, patient profiles (age, gender, chronic conditions).
 - **Long-term Agent Memory**: The agent remembers past visit history and automatically references it in new conversations.
 
-### 🚨 4. Automated Emergency Email Alerts
-- If the AI or the ML model detects a "Level 2" or "Level 3" urgent triage risk, it autonomously drafts and sends an **Emergency Email** to the patient.
-- Uses the **Resend API** to dynamically deliver personalized medical risks and addresses of nearby hospitals without prompting the user.
+### 🚨 4. Automated Visit Summary Emails
+- After every consultation, the system automatically drafts and sends a **Visit Summary Email** to the patient.
+- Uses the **Resend API** to dynamically deliver the predicted triage level, clinical advice, and nearby hospital details without prompting the user.
 
 ---
 
@@ -78,15 +78,13 @@ graph TD
     END:::startend --> Output[/Response sent to User/]
 
     %% Tool Definitions
-    subgraph "External APIs"
+    subgraph External APIs
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
-        T3[[email_alert<br>Resend API]]
     end
-
+    
     N5 -.-> T1
     N5 -.-> T2
-    N5 -.-> T3
 ```
 ---
 

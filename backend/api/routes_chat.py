@@ -10,6 +10,7 @@ from backend.agent.graph import clinical_agent
 from backend.api.routes_auth import get_current_user
 from backend.db.database import get_db
 from backend.db.models import User, VisitHistory, PatientProfile
+from backend.agent.tools.email_alert import send_visit_summary_email
 
 router = APIRouter(prefix="/chat", tags=["clinical_agent"])
 
@@ -68,6 +69,7 @@ async def chat_with_agent(
         "image_bytes": image_bytes,
         "patient_profile": profile_dict,
         "visit_history": history_dicts,
+        "user_email": current_user.email,
         "messages": [] # The system will append to this automatically
     }
     
@@ -96,6 +98,9 @@ async def chat_with_agent(
             )
             db.add(new_visit)
             db.commit()
+            
+            # Send summary email for EVERY visit
+            send_visit_summary_email(current_user.email, final_message, triage_label)
             
         return {
             "thread_id": current_thread_id,
