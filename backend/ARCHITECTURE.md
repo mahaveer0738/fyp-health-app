@@ -58,34 +58,34 @@ graph TD
     %% Entry
     Input[/User: Symptoms + Vitals + Photo/] --> START(((START)))
     START:::startend --> N1
-    
+
     %% Sequential Data Prep Pipeline
     subgraph Data Preparation
         N1[prepare_vitals_node<br>Runs Sklearn Model]:::datanode --> N2
         N2[ocr_node<br>Gemini Vision API]:::datanode --> N3
         N3[retrieval_node<br>Queries ChromaDB]:::datanode
     end
-    
+
     N3 --> N4
-    
+
     %% The ReAct Agent Loop
     subgraph The Agentic Loop
         N4{chatbot_node<br>Groq LLM Reasoning}:::agentnode
-        
+
         N4 -- "Requires Tool" --> N5[ToolNode<br>Executes Function]:::toolnode
         N5 -- "Returns Result" --> N4
     end
-    
+
     %% Exit
-    N4 -- "Final Answer" --> END(((END))):startend
-    END --> Output[/Response sent back to User/]
+    N4 -- "Final Answer" --> END(((END)))
+    END:::startend --> Output[/Response sent back to User/]
 
     %% Tool Definitions
-    subgraph Available Tools (backend/agent/tools/)
+    subgraph "Available Tools (backend/agent/tools/)"
         T1[[hospital_locator]]
         T2[[pharmacy_locator]]
     end
-    
+
     N5 -.-> T1
     N5 -.-> T2
 ```
