@@ -299,7 +299,7 @@
 
 <nav>
   <a href="index.html" class="nav-brand">
-    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; margin-right: 4px; vertical-align: middle; border-radius: 4px;">NexaCare
+    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; vertical-align: middle;">
   </a>
   <div style="display: flex; gap: 1.5rem; align-items: center;">
     <a href="index.html" class="btn-ghost" style="text-decoration:none; color:var(--forest); font-weight:600;">Home</a>
@@ -820,8 +820,24 @@ async function sendChatMessage(e) {
       body: chatFormData
     });
     const chatData = await chatResponse.json();
-    const rawResponse = chatData.agent_response || chatData.reply || chatData.response || chatData.message || "I'm sorry, I couldn't process that.";
+    let rawResponse = chatData.agent_response || chatData.reply || chatData.response || chatData.message || "I'm sorry, I couldn't process that.";
     
+    // Extract Hospital block if present
+    const hospitalRegex = /🏥 Nearest Hospitals.*?(?=\n\n💊|\n\n\*\*|$)/s;
+    const hospMatch = rawResponse.match(hospitalRegex);
+    if (hospMatch) {
+      document.getElementById('hospital-list').innerHTML = marked.parse(hospMatch[0]);
+      rawResponse = rawResponse.replace(hospMatch[0], '').trim();
+    }
+
+    // Extract Pharmacy block if present
+    const pharmacyRegex = /💊 Nearest Pharmacies.*?(?=\n\n🏥|\n\n\*\*|$)/s;
+    const pharmMatch = rawResponse.match(pharmacyRegex);
+    if (pharmMatch) {
+      document.getElementById('pharmacy-list').innerHTML = marked.parse(pharmMatch[0]);
+      rawResponse = rawResponse.replace(pharmMatch[0], '').trim();
+    }
+
     document.getElementById(loaderId).innerHTML = marked.parse(rawResponse);
   } catch (err) {
     document.getElementById(loaderId).innerText = "Error connecting to server.";

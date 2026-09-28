@@ -49,7 +49,7 @@ def send_visit_summary_email(user_email: str, ai_summary: str, triage_label: str
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body {{ font-family: 'Inter', sans-serif; background-color: #f7f9fc; margin: 0; padding: 20px; }}
             .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }}
-            .header {{ background: linear-gradient(135deg, {accent_color} 0%, #1a2340 100%); color: white; padding: 30px 20px; text-align: center; }}
+            .header {{ background: #ffffff; border-bottom: 4px solid {accent_color}; color: #334155; padding: 30px 20px; text-align: center; }}
             .header h1 {{ margin: 0; font-size: 24px; font-weight: 700; }}
             .content {{ padding: 30px; color: #334155; }}
             .triage-badge {{ display: inline-block; background-color: {accent_color}22; color: {accent_color}; font-weight: 600; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-bottom: 20px; }}
@@ -61,7 +61,7 @@ def send_visit_summary_email(user_email: str, ai_summary: str, triage_label: str
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏥 ER Triage Summary</h1>
+                    <img src="cid:nexacare_logo" alt="NexaCare Logo" style="max-height: 70px; display: block; margin: 0 auto;">
                 </div>
                 <div class="content">
                     <p style="font-size: 16px; margin-top: 0;">Hello,</p>
@@ -86,12 +86,25 @@ def send_visit_summary_email(user_email: str, ai_summary: str, triage_label: str
         """
         
         # Create the email message
-        msg = MIMEMultipart()
-        msg['From'] = f"ER Triage System <{sender_email}>"
+        msg = MIMEMultipart('related')
+        msg['From'] = f"NexaCare <{sender_email}>"
         msg['To'] = user_email
-        msg['Subject'] = "Your ER Triage Visit Summary"
+        msg['Subject'] = "Your NexaCare Visit Summary"
         
-        msg.attach(MIMEText(html_content, 'html'))
+        msg_alternative = MIMEMultipart('alternative')
+        msg.attach(msg_alternative)
+        msg_alternative.attach(MIMEText(html_content, 'html'))
+        
+        try:
+            from email.mime.image import MIMEImage
+            logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "frontend", "Icons", "LOGO.png")
+            with open(logo_path, "rb") as img_file:
+                image = MIMEImage(img_file.read(), name="LOGO.png")
+                image.add_header('Content-ID', '<nexacare_logo>')
+                image.add_header('Content-Disposition', 'inline', filename='LOGO.png')
+                msg.attach(image)
+        except Exception as e:
+            print(f"Could not attach logo: {e}")
         
         # Connect to Gmail's SMTP server
         server = smtplib.SMTP('smtp.gmail.com', 587)

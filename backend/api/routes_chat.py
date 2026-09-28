@@ -6,6 +6,7 @@ from pydantic import ValidationError
 import uuid
 import httpx
 import logging
+from langchain_core.messages import HumanMessage
 
 from backend.ml.schema import PatientVitals
 from backend.agent.graph import clinical_agent
@@ -111,7 +112,7 @@ async def chat_with_agent(
         "patient_profile": profile_dict,
         "visit_history": history_dicts,
         "user_email": current_user.email,
-        "messages": []
+        "messages": [HumanMessage(content=symptoms)]
     }
     
     # Use the provided thread_id or create a new one
@@ -135,8 +136,8 @@ async def chat_with_agent(
             triage_label = getattr(ml_pred, "triage_label", "Unknown") if ml_pred else "Unknown"
             triage_confidence = getattr(ml_pred, "probability", None) if ml_pred else None
 
-        # Save this visit to history with ALL metadata
-        if profile:
+        # Only save this visit and send an email if it's the FIRST message of a new session (indicated by the presence of vitals)
+        if vitals_json and profile:
             new_visit = VisitHistory(
                 patient_id=profile.id,
                 symptoms=symptoms,
@@ -161,7 +162,7 @@ async def chat_with_agent(
             db.add(new_visit)
             db.commit()
             
-            # Send summary email for EVERY visit
+            # Send summary email for EVERY NEW visit
             try:
                 send_visit_summary_email.invoke({
                     "user_email": current_user.email,
