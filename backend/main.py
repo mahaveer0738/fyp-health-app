@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes_predict import router as predict_router
 from backend.api.routes_chat import router as chat_router
 from backend.api.routes_auth import router as auth_router
+from backend.api.routes_user import router as user_router
 from backend.db.database import engine, Base
 
 # Create database tables
@@ -29,6 +30,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(user_router)
 app.include_router(predict_router)
 app.include_router(chat_router)
 

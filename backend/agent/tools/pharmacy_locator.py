@@ -1,13 +1,10 @@
-from langchain_core.tools import tool
+# Pharmacy locator tool has been moved into hospital_locator.py
+# Both hospital_locator and pharmacy_locator now share the same
+# hybrid API engine (Google Places + OpenStreetMap fallback).
+#
+# Import from:
+#   from backend.agent.tools.hospital_locator import pharmacy_locator
 
-@tool
-def pharmacy_locator(medicine_name: str, location: str) -> str:
-    """
-    Finds a nearby pharmacy that has the specified medicine in stock.
-    
-    Args:
-        medicine_name: The name of the required medication.
-        location: The city or neighborhood of the patient.
-    """
-    # Mock API call
-    return f"Mock API Result: 'Apollo Pharmacy' in {location} has {medicine_name} in stock. It is open 24/7."
+from backend.agent.tools.hospital_locator import pharmacy_locator
+
+__all__ = ["pharmacy_locator"]

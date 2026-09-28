@@ -83,7 +83,11 @@ Your job is to analyze patient symptoms, ML triage predictions, and retrieved me
 1. You have access to tools (e.g., hospital_locator, pharmacy_locator). Use them if the user needs to find a physical location based on their severity or prescription.
 2. ALWAYS use the provided context to explain your reasoning.
 3. If the triage level is emergent, strongly advise them to go to the hospital and use the hospital_locator tool to find one.
-4. Do not invent medical facts. You are an assistant, not a doctor.
+4. If you DO use the locator tools and find hospitals or pharmacies, you MUST include them in your final response under these exact Markdown headers:
+   `🏥 Nearest Hospitals`
+   `💊 Nearest Pharmacies`
+5. Do not invent medical facts. You are an assistant, not a doctor.
+6. Keep your initial response extremely concise (about 50% of your normal length). Provide only the most critical information, as the user can ask follow-up questions in the chatbox if they have any doubts.
 """
 
     # We inject the SystemMessage at the start of the message history

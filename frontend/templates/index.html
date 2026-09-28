@@ -4,608 +4,794 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ER Triage — Predict</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"/>
+  <title>NexaCare — Intelligent Health Triage</title>
+  <meta name="description" content="AI-powered emergency room triage system. Get instant health assessments, find nearby hospitals, and receive personalized clinical guidance."/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #f7f9fc;
-      --white:     #ffffff;
-      --card:      #ffffff;
-      --border:    #e8edf5;
-      --text:      #1a2340;
-      --muted:     #7a8aab;
-      --light:     #f0f4fb;
-      --teal:      #2dd4bf;
-      --teal-dk:   #14b8a6;
-      --teal-lt:   rgba(45,212,191,0.10);
-      --red:       #e63946;
-      --red-dk:    #c1121f;
-      --red-lt:    rgba(230,57,70,0.09);
-      --orange:    #f4a261;
-      --orange-lt: rgba(244,162,97,0.10);
-      --input-bg:  #f7f9fc;
-      --shadow:    0 2px 20px rgba(26,35,64,0.07);
-      --shadow-md: 0 6px 32px rgba(26,35,64,0.11);
+      --forest:     #1B3D2F;
+      --forest-l:   #2A5A42;
+      --cream:      #F5F0E8;
+      --cream-d:    #EDE7DB;
+      --lime:       #C8E64A;
+      --lime-d:     #B0CC2E;
+      --white:      #FFFFFF;
+      --text:       #1B3D2F;
+      --text-muted: #5A7A6A;
+      --border:     #D8D0C4;
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Nunito Sans', sans-serif;
-      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
       color: var(--text);
-      min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* AUTH LOGIC */
-    <script>
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-          window.location.href = 'login.html';
-      }
-      function logout() {
-          localStorage.removeItem('access_token');
-          window.location.href = 'login.html';
-      }
-    </script>
-
-    /* ── decorative top bar ── */
-    .top-bar {
-      height: 4px;
-      background: linear-gradient(90deg, var(--teal), var(--red), var(--orange));
+    h1, h2, h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--forest);
     }
 
-    /* ── nav ── */
+    /* ─────────── NAV (smart hide/show on scroll direction) ─────────── */
     nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.9rem 2.5rem;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(16px);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(245, 240, 232, 0.95);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border);
-      box-shadow: 0 2px 12px rgba(26,35,64,0.05);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4rem; height: 72px;
+      transition: transform 0.35s ease, box-shadow 0.3s;
+      transform: translateY(0);
     }
-    .nav-logo {
+    nav.nav-hidden { transform: translateY(-100%); }
+    nav.scrolled { box-shadow: 0 2px 20px rgba(27,61,47,0.08); }
+    .nav-spacer { height: 72px; }
+
+    .nav-brand {
       font-family: 'Playfair Display', serif;
-      font-weight: 800;
-      font-size: 1.2rem;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--text);
+      font-weight: 700; font-size: 1.45rem;
+      color: var(--forest);
+      display: flex; align-items: center; gap: 10px;
       text-decoration: none;
     }
-    .nav-logo .logo-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--teal), var(--teal-dk));
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      box-shadow: 0 3px 10px rgba(45,212,191,0.35);
-    }
-    .nav-logo .em { color: var(--red); }
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
-    .breadcrumb a:hover { color: var(--teal-dk); }
-    .breadcrumb .sep { opacity: 0.4; }
-    .breadcrumb .current { color: var(--text); font-weight: 700; }
-    .nav-back {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 0.5rem 1.2rem;
-      border-radius: 50px;
-      text-decoration: none;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-    }
-    .nav-back:hover { border-color: var(--teal); color: var(--teal-dk); background: var(--teal-lt); }
-
-    /* ── main layout ── */
-    .page {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 3rem 2rem 4rem;
+    .nav-brand-dot {
+      width: 10px; height: 10px; background: var(--lime);
+      border-radius: 50%; display: inline-block;
     }
 
-    /* ── page header ── */
-    .page-header {
-      margin-bottom: 2.5rem;
-      animation: fadeUp 0.6s ease both;
+    .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--forest); text-decoration: none; font-size: 0.88rem;
+      font-weight: 500; letter-spacing: 0.03em;
+      transition: color 0.2s;
     }
-    .page-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: var(--red-lt);
-      border: 1px solid rgba(230,57,70,0.2);
-      color: var(--red);
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      padding: 5px 15px;
-      border-radius: 100px;
-      margin-bottom: 1rem;
-    }
-    .page-header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.7rem, 3.5vw, 2.3rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.4rem;
-      color: var(--text);
-    }
-    .page-header h1 em {
-      font-style: italic;
-      color: var(--red);
-    }
-    .page-header p { color: var(--muted); font-size: 0.92rem; }
+    .nav-links a:hover { color: var(--forest-l); }
 
-    /* ── form card ── */
-    .form-card {
-      background: var(--card);
+    .nav-actions { display: flex; align-items: center; gap: 1rem; }
+    
+    /* Dropdown CSS */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content {
+      display: none; position: absolute; background-color: var(--white);
+      min-width: 220px; box-shadow: 0px 8px 24px rgba(27,61,47,0.1);
+      z-index: 101; border-radius: 12px; overflow: hidden; top: 100%; left: -20px;
       border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 2.5rem 2.2rem;
-      box-shadow: var(--shadow);
-      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .dropdown-content a {
+      color: var(--forest); padding: 12px 18px; text-decoration: none;
+      display: block; font-size: 0.85rem; border-bottom: 1px solid var(--border);
+    }
+    .dropdown-content a:last-child { border-bottom: none; }
+    .dropdown-content a:hover { background-color: var(--cream-d); color: var(--forest); }
+    .dropdown:hover .dropdown-content { display: block; }
+    .dropdown-content a::before {
+      content: '•'; margin-right: 8px; color: var(--lime); opacity: 0; transition: opacity 0.2s;
+    }
+    .dropdown-content a:hover::before { opacity: 1; }
+
+    .btn-outline {
+      background: transparent; color: var(--forest);
+      border: 1.5px solid var(--forest); border-radius: 50px;
+      padding: 0.55rem 1.6rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.25s;
+      text-decoration: none;
+    }
+    .btn-outline:hover { background: var(--forest); color: var(--white); }
+
+    .btn-primary {
+      background: var(--forest); color: var(--white);
+      border: none; border-radius: 50px;
+      padding: 0.6rem 1.8rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.25s;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--forest-l); transform: translateY(-1px); }
+
+    .btn-lime {
+      background: var(--lime); color: var(--forest);
+      border: none; border-radius: 50px;
+      padding: 0.7rem 2.2rem; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all 0.25s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-lime:hover { background: var(--lime-d); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(200, 230, 74, 0.35); }
+
+    /* ─────────── HERO (full-width image + overlapping text card) ─────────── */
+    .hero {
+      position: relative;
+      min-height: 88vh;
+      overflow: hidden;
+    }
+    .hero-image {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1;
+    }
+    .hero-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      object-position: right center;
+      display: block;
+    }
+    .hero-text {
+      position: relative; z-index: 2;
+      background: rgba(237, 231, 219, 0.92);
+      backdrop-filter: blur(4px);
+      max-width: 480px;
+      padding: 4rem 4rem 4rem 6rem;
+      min-height: 88vh;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .hero-text h1 {
+      font-size: 3.4rem; line-height: 1.12;
+      font-weight: 800; margin-bottom: 1rem;
+    }
+    .hero-text h1 .highlight {
+      color: var(--forest); position: relative;
+    }
+    .hero-text h1 .highlight::after {
+      content: ''; position: absolute; bottom: 4px; left: 0;
+      width: 100%; height: 12px; background: var(--lime);
+      z-index: -1; border-radius: 4px; opacity: 0.6;
+    }
+    .hero-subtitle {
+      font-size: 1.05rem; color: var(--text-muted);
+      line-height: 1.75; margin-bottom: 2rem;
+    }
+    .hero-cta { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+
+    .hero-image-badge {
+      position: absolute; bottom: 28px; right: 28px;
+      z-index: 3;
+      background: rgba(255,255,255,0.95); border-radius: 14px;
+      padding: 0.8rem 1.3rem; box-shadow: 0 8px 30px rgba(27,61,47,0.15);
+      display: flex; align-items: center; gap: 10px;
+      backdrop-filter: blur(8px);
+    }
+    .badge-pulse {
+      width: 12px; height: 12px; background: #22c55e;
+      border-radius: 50%; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.3); }
+    }
+    .badge-text { font-size: 0.82rem; font-weight: 600; color: var(--forest); }
+
+    /* ─────────── TAGLINE MARQUEE ─────────── */
+    .tagline-bar {
+      background: var(--forest); color: var(--cream);
+      padding: 1rem 0; overflow: hidden; white-space: nowrap;
+    }
+    .tagline-inner {
+      display: inline-flex; gap: 3rem;
+      animation: scroll-marquee 30s linear infinite;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 500; font-style: italic;
+    }
+    .tagline-inner span { opacity: 0.8; }
+    .tagline-dot { color: var(--lime); font-style: normal; }
+    @keyframes scroll-marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
+    /* ─────────── FEATURES / SERVICES ─────────── */
+    .section {
+      max-width: 1280px; margin: 0 auto;
+      padding: 5rem 4rem;
+    }
+    .section-header {
+      text-align: center; margin-bottom: 3.5rem;
+    }
+    .section-header h2 {
+      font-size: 2.4rem; font-weight: 700; margin-bottom: 0.8rem;
+    }
+    .section-header p {
+      font-size: 1rem; color: var(--text-muted); max-width: 560px; margin: 0 auto; line-height: 1.7;
+    }
     .section-label {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--teal-dk);
-      margin-bottom: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1.5px;
-      background: var(--border);
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--text-muted); font-weight: 600; margin-bottom: 0.6rem;
     }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
-    .full { grid-column: 1 / -1; }
-
-    .field { display: flex; flex-direction: column; gap: 7px; }
-    label {
-      font-size: 0.74rem;
-      font-weight: 800;
-      color: var(--muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+    .features-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+    .feature-card {
+      background: var(--cream-d); border-radius: 18px;
+      padding: 2.2rem 1.8rem; text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid transparent;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(27,61,47,0.1);
+      border-color: var(--lime);
+    }
+    .feature-icon {
+      width: 80px; height: 80px;
+      background: rgba(200,230,74,0.15);
+      border-radius: 50%; margin: 0 auto 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+    }
+    .feature-card h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+      font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;
     }
 
-    .input-wrap { position: relative; }
-    .input-unit {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.73rem;
-      font-weight: 700;
-      color: var(--teal-dk);
-      pointer-events: none;
-      background: var(--teal-lt);
-      padding: 2px 8px;
-      border-radius: 6px;
+    /* ─────────── HOW IT WORKS (Split Layout) ─────────── */
+    .how-section {
+      max-width: 1280px; margin: 4rem auto;
+      border: 1px solid var(--forest);
+      border-left: none; border-right: none;
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .how-left {
+      background: #EBE6D8;
+      display: flex; 
+      border-right: 1px solid var(--forest);
+      padding: 0; /* Remove padding so image can fill */
+    }
+    .how-image {
+      width: 100%; height: 100%;
+    }
+    .how-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+    .how-right {
+      background: var(--cream);
+      padding: 5rem 4rem 5rem 6rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .how-right-header {
+      margin-bottom: 3rem;
+    }
+    .how-right-header h2 {
+      font-size: 3rem; font-weight: 700;
+    }
+    .how-steps { display: flex; flex-direction: column; gap: 3rem; }
+    .how-step {
+      display: flex; gap: 1.5rem; align-items: flex-start;
+    }
+    .how-step-icon {
+      width: 48px; height: 48px; min-width: 48px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .how-step-icon svg {
+      width: 36px; height: 36px;
+      stroke: var(--forest);
+    }
+    .how-step h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 0.6rem;
+      color: var(--forest);
+    }
+    .how-step p { 
+      font-size: 1.05rem; color: var(--text-muted); 
+      line-height: 1.7; max-width: 420px;
     }
 
-    input, select {
-      background: var(--input-bg);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-family: 'Nunito Sans', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      padding: 0.78rem 1rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-      width: 100%;
-      -webkit-appearance: none;
+    /* ─────────── CAPABILITIES ─────────── */
+    .capabilities-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      border: 1px solid var(--border); border-radius: 18px;
+      overflow: hidden;
     }
-    input.has-unit { padding-right: 4rem; }
-    input:focus, select:focus {
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
-      background: var(--white);
+    .cap-card {
+      padding: 2.5rem 2rem; text-align: left;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+      position: relative;
     }
-    input::placeholder { color: #c5cfe0; }
-
-    .select-wrap { position: relative; }
-    .select-wrap::after {
-      content: '▾';
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-      font-size: 0.8rem;
-    }
-
-    hr.divider {
-      border: none;
-      border-top: 1.5px solid var(--border);
-      margin: 2rem 0;
-    }
-
-    /* ── submit button ── */
-    .btn-submit {
-      width: 100%;
-      padding: 1rem;
-      border: none;
-      border-radius: 50px;
-      background: linear-gradient(135deg, var(--red), var(--red-dk));
-      color: #fff;
-      font-family: 'Nunito Sans', sans-serif;
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 24px rgba(230,57,70,0.3);
-    }
-    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(230,57,70,0.45); }
-    .btn-submit:active { transform: translateY(0); }
-
-    /* ── error box ── */
-    .error-box {
-      margin-top: 1.5rem;
-      background: var(--red-lt);
-      border: 1.5px solid rgba(230,57,70,0.25);
-      color: var(--red);
-      border-radius: 14px;
-      padding: 1rem 1.2rem;
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    /* ── result ── */
-    .result-wrap { margin-top: 2rem; }
-    .result-header {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--teal-dk);
-      margin-bottom: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .result-header::after {
-      content: '';
-      flex: 1;
-      height: 1.5px;
-      background: var(--border);
-    }
-
-    .result-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      border-radius: 18px;
-      padding: 1.6rem 1.8rem;
-      border: 1.5px solid;
-    }
-    .result-box.l0,.result-box.l1 { background:#edfcf9; border-color:rgba(45,212,191,0.4); }
-    .result-box.l2 { background:#fffbf0; border-color:rgba(244,162,97,0.4); }
-    .result-box.l3 { background:#fff5f5; border-color:rgba(230,57,70,0.35); }
-
-    .result-level {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.3rem;
-    }
-    .result-text {
+    .cap-card:nth-child(4n) { border-right: none; }
+    .cap-card:nth-last-child(-n+4) { border-bottom: none; }
+    .cap-card:hover { background: var(--white); }
+    .cap-card .cap-num {
       font-family: 'Playfair Display', serif;
-      font-size: 1.45rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-size: 2.4rem; font-weight: 700; color: var(--lime);
+      opacity: 0.5; margin-bottom: 0.8rem;
     }
-    .l0 .result-text,.l1 .result-text { color: var(--teal-dk); }
-    .l2 .result-text { color: #c07c43; }
-    .l3 .result-text { color: var(--red); }
+    .cap-card h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;
+    }
+    .cap-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; }
 
-    .confidence-block {
+    /* ─────────── TESTIMONIALS ─────────── */
+    .testimonials-bg {
+      background: url('') center/cover;
+      position: relative;
+    }
+    .testimonial-card {
+      background: rgba(245,240,232,0.96);
+      backdrop-filter: blur(10px);
+      max-width: 640px; margin: 0 auto;
+      border-radius: 18px; padding: 3rem;
       text-align: center;
-      background: var(--white);
-      border-radius: 14px;
-      padding: 1rem 1.4rem;
-      box-shadow: var(--shadow);
-      flex-shrink: 0;
     }
-    .conf-val {
+    .testimonial-card blockquote {
       font-family: 'Playfair Display', serif;
-      font-size: 1.9rem;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--text);
+      font-size: 1.15rem; font-style: italic;
+      line-height: 1.8; color: var(--forest);
+      margin-bottom: 1.5rem;
     }
-    .conf-label {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 4px;
+    .testimonial-author {
+      background: var(--lime); display: inline-block;
+      padding: 0.5rem 2rem; border-radius: 50px;
+      font-weight: 700; font-size: 0.9rem; color: var(--forest);
+    }
+    .testimonial-dots {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 1.5rem;
+    }
+    .testimonial-dots span {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--forest); opacity: 0.3;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .testimonial-dots span.active { opacity: 1; }
+
+    /* ─────────── FOOTER ─────────── */
+    footer {
+      background: var(--forest); color: var(--cream);
+      padding: 4rem 4rem 2rem;
+    }
+    .footer-grid {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 3rem; margin-bottom: 3rem;
+    }
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem;
+    }
+    .footer-desc {
+      font-size: 0.85rem; opacity: 0.7; line-height: 1.7; margin-bottom: 1.5rem;
+    }
+    .footer-email-form { display: flex; gap: 0.5rem; }
+    .footer-email-form input {
+      flex: 1; background: transparent;
+      border: none; border-bottom: 1px solid rgba(245,240,232,0.3);
+      color: var(--cream); font-family: inherit; font-size: 0.85rem;
+      padding: 0.5rem 0; outline: none;
+    }
+    .footer-email-form input::placeholder { color: rgba(245,240,232,0.5); }
+    .footer-email-form button {
+      background: var(--lime); color: var(--forest);
+      border: none; border-radius: 50px;
+      padding: 0.5rem 1.4rem; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+    .footer-email-form button:hover { background: var(--lime-d); }
+
+    .footer-col h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 700; margin-bottom: 1rem;
+      color: var(--lime);
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.6rem; }
+    .footer-col ul a {
+      color: var(--cream); text-decoration: none;
+      font-size: 0.85rem; opacity: 0.7; transition: opacity 0.2s;
+    }
+    .footer-col ul a:hover { opacity: 1; }
+
+    .footer-bottom {
+      max-width: 1280px; margin: 0 auto;
+      border-top: 1px solid rgba(245,240,232,0.15);
+      padding-top: 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-copy { font-size: 0.78rem; opacity: 0.5; }
+
+    /* ─────────── RESPONSIVE ─────────── */
+    @media (max-width: 1024px) {
+      .hero { min-height: auto; }
+      .hero-image { position: relative; height: 50vh; }
+      .hero-text {
+        max-width: 100%; min-height: auto;
+        padding: 3rem 2rem; text-align: center;
+      }
+      .hero-cta { justify-content: center; }
+      .hero-image-badge { bottom: 16px; right: 16px; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-section { grid-template-columns: 1fr; border-right: none; margin: 2rem; }
+      .how-left { border-right: none; border-bottom: 1px solid var(--forest); padding: 3rem 2rem; }
+      .how-right { padding: 3rem 2rem; }
+      .capabilities-grid { grid-template-columns: repeat(2, 1fr); }
+      .cap-card:nth-child(2n) { border-right: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      nav { padding: 0 2rem; }
+      .section { padding: 3.5rem 2rem; }
+    }
+    @media (max-width: 640px) {
+      .hero-text h1 { font-size: 2.2rem; }
+      .hero-text { padding: 2.5rem 1.5rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .capabilities-grid { grid-template-columns: 1fr; }
+      .cap-card { border-right: none !important; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
     }
 
-    /* ── input summary ── */
-    .summary {
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      padding: 1.3rem 1.5rem;
-      margin-top: 1.2rem;
+    /* ─────────── ANIMATIONS ─────────── */
+    .fade-up {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
     }
-    .summary-title {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 0.8rem;
-    }
-    .summary-item {
-      font-size: 0.78rem;
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .summary-item strong { color: var(--text); display: block; font-size: 0.88rem; font-weight: 800; margin-top: 2px; }
-
-    /* ── legend ── */
-    .legend {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-top: 2rem;
-      justify-content: center;
-      animation: fadeUp 0.6s 0.2s ease both;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--muted);
-      background: var(--card);
-      padding: 5px 14px;
-      border-radius: 100px;
-      border: 1.5px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
-    .dot.g { background: var(--teal); }
-    .dot.y { background: var(--orange); }
-    .dot.r { background: var(--red); }
-
-    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
-
-    @media (max-width: 560px) {
-      nav { padding: 1rem 1.2rem; }
-      .breadcrumb { display: none; }
-      .grid { grid-template-columns: 1fr; }
-      .full { grid-column: 1; }
-      .form-card { padding: 1.5rem 1.2rem; }
-      .summary-grid { grid-template-columns: 1fr 1fr; }
-    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
   </style>
 </head>
 <body>
 
-<div class="top-bar"></div>
+<!-- AUTH CHECK -->
+<script>
+  const token = localStorage.getItem('access_token');
+  // If logged in, we adjust the nav buttons; if not, keep login/register visible
+</script>
 
-<!-- Nav -->
-<nav>
-  <a href="/" class="nav-logo">
-    <div class="logo-icon">🏥</div>
-    <span><span class="em">ER</span>Triage<span class="em">AI</span></span>
+<!-- ─────────── NAV ─────────── -->
+<nav id="main-nav">
+  <a href="#" class="nav-brand">
+    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; margin-right: 4px; vertical-align: middle; border-radius: 4px;">NexaCare
   </a>
-  <div class="breadcrumb">
-    <a href="/">Dashboard</a>
-    <span class="sep">/</span>
-    <span class="current">Predict</span>
-  </div>
-  <div style="display: flex; gap: 1rem; align-items: center;">
-    <a href="/" class="nav-back">← Dashboard</a>
-    <button onclick="logout()" class="nav-back" style="cursor: pointer; background: var(--bg);">Logout</button>
+  <ul class="nav-links">
+    <li class="dropdown">
+      <a href="#features" style="cursor: pointer;">Features ▾</a>
+      <div class="dropdown-content">
+        <a href="mode_select.html">ML Triage Engine</a>
+        <a href="locator.html?type=hospital">Hospital Locator</a>
+        <a href="locator.html?type=pharmacy">Pharmacy Finder</a>
+        <a href="manual_entry.html">Smart OCR Scanner</a>
+      </div>
+    </li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#capabilities">Capabilities</a></li>
+    <li><a href="#stories">Testimonials</a></li>
+  </ul>
+  <div class="nav-actions" id="nav-actions">
+    <a href="login.html" class="btn-outline" id="nav-login-btn">Log In</a>
+    <a href="register.html" class="btn-primary" id="nav-register-btn">Get Started</a>
   </div>
 </nav>
 
-<!-- Page -->
-<div class="page">
+<!-- spacer for fixed nav -->
+<div class="nav-spacer"></div>
 
-  <div class="page-header">
-    <div class="page-badge">🩺 Patient Assessment</div>
-    <h1>Triage <em>Prediction</em></h1>
-    <p>Fill in the patient's vitals below and click Predict to get the triage classification.</p>
+<!-- ─────────── HERO (full-width image + overlapping text card) ─────────── -->
+<section class="hero">
+  <div class="hero-image">
+    <img src="../assets/images/hero.jpg" alt="AI-powered health dashboard with doctor"/>
   </div>
-
-  <div class="form-card">
-    <form action="/predict" method="POST">
-
-      <div class="section-label">Vital Signs</div>
-      <div class="grid">
-
-        <div class="field">
-          <label for="age">Age</label>
-          <div class="input-wrap">
-            <input class="has-unit" type="number" id="age" name="age"
-                   placeholder="45" min="0" max="120" step="1" required
-                   value="{{ input_data.age if input_data else '' }}"/>
-            <span class="input-unit">yrs</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="heart_rate">Heart Rate</label>
-          <div class="input-wrap">
-            <input class="has-unit" type="number" id="heart_rate" name="heart_rate"
-                   placeholder="82" min="20" max="250" step="1" required
-                   value="{{ input_data.heart_rate if input_data else '' }}"/>
-            <span class="input-unit">bpm</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="systolic_blood_pressure">Systolic BP</label>
-          <div class="input-wrap">
-            <input class="has-unit" type="number" id="systolic_blood_pressure" name="systolic_blood_pressure"
-                   placeholder="120" min="50" max="300" step="1" required
-                   value="{{ input_data.systolic_blood_pressure if input_data else '' }}"/>
-            <span class="input-unit">mmHg</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="oxygen_saturation">Oxygen Saturation</label>
-          <div class="input-wrap">
-            <input class="has-unit" type="number" id="oxygen_saturation" name="oxygen_saturation"
-                   placeholder="98" min="50" max="100" step="0.1" required
-                   value="{{ input_data.oxygen_saturation if input_data else '' }}"/>
-            <span class="input-unit">%</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="body_temperature">Body Temperature</label>
-          <div class="input-wrap">
-            <input class="has-unit" type="number" id="body_temperature" name="body_temperature"
-                   placeholder="37.2" min="30" max="45" step="0.1" required
-                   value="{{ input_data.body_temperature if input_data else '' }}"/>
-            <span class="input-unit">°C</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="pain_level">Pain Level (1–10)</label>
-          <input type="number" id="pain_level" name="pain_level"
-                 placeholder="5" min="1" max="10" step="1" required
-                 value="{{ input_data.pain_level if input_data else '' }}"/>
-        </div>
-
-      </div>
-
-      <hr class="divider"/>
-      <div class="section-label">History &amp; Arrival</div>
-      <div class="grid">
-
-        <div class="field">
-          <label for="chronic_disease_count">Chronic Disease Count</label>
-          <input type="number" id="chronic_disease_count" name="chronic_disease_count"
-                 placeholder="2" min="0" max="20" step="1" required
-                 value="{{ input_data.chronic_disease_count if input_data else '' }}"/>
-        </div>
-
-        <div class="field">
-          <label for="previous_er_visits">Previous ER Visits</label>
-          <input type="number" id="previous_er_visits" name="previous_er_visits"
-                 placeholder="1" min="0" max="50" step="1" required
-                 value="{{ input_data.previous_er_visits if input_data else '' }}"/>
-        </div>
-
-        <div class="field full">
-          <label for="arrival_mode">Arrival Mode</label>
-          <div class="select-wrap">
-            <select id="arrival_mode" name="arrival_mode" required>
-              <option value="" disabled {% if not input_data %}selected{% endif %}>Select arrival mode…</option>
-              <option value="Walk-in"   {% if input_data and input_data.arrival_mode == 'Walk-in'   %}selected{% endif %}>🚶 Walk-in</option>
-              <option value="Ambulance" {% if input_data and input_data.arrival_mode == 'Ambulance' %}selected{% endif %}>🚑 Ambulance</option>
-              <option value="Referred"  {% if input_data and input_data.arrival_mode == 'Referred'  %}selected{% endif %}>📋 Referred</option>
-            </select>
-          </div>
-        </div>
-
-      </div>
-
-      <hr class="divider"/>
-      <button type="submit" class="btn-submit">⚡ Predict Triage Level</button>
-    </form>
-
-    <!-- Error -->
-    {% if error %}
-    <div class="error-box">⚠️ {{ error }}</div>
-    {% endif %}
-
-    <!-- Result -->
-    {% if prediction_text %}
-    {% set lvl = prediction_text[6] | int %}
-    <div class="result-wrap">
-      <div class="result-header">Prediction Result</div>
-      <div class="result-box l{{ lvl }}">
-        <div class="result-left">
-          <div class="result-level">Priority Classification</div>
-          <div class="result-text">{{ prediction_text }}</div>
-        </div>
-        <div class="confidence-block">
-          <div class="conf-val">{{ probability }}%</div>
-          <div class="conf-label">Confidence</div>
-        </div>
-      </div>
-
-      {% if input_data %}
-      <div class="summary">
-        <div class="summary-title">Input Summary</div>
-        <div class="summary-grid">
-          <div class="summary-item">Age<strong>{{ input_data.age }} yrs</strong></div>
-          <div class="summary-item">Heart Rate<strong>{{ input_data.heart_rate }} bpm</strong></div>
-          <div class="summary-item">Systolic BP<strong>{{ input_data.systolic_blood_pressure }} mmHg</strong></div>
-          <div class="summary-item">SpO₂<strong>{{ input_data.oxygen_saturation }}%</strong></div>
-          <div class="summary-item">Temperature<strong>{{ input_data.body_temperature }}°C</strong></div>
-          <div class="summary-item">Pain Level<strong>{{ input_data.pain_level }}/10</strong></div>
-          <div class="summary-item">Chronic Diseases<strong>{{ input_data.chronic_disease_count }}</strong></div>
-          <div class="summary-item">ER Visits<strong>{{ input_data.previous_er_visits }}</strong></div>
-          <div class="summary-item">Arrival<strong>{{ input_data.arrival_mode }}</strong></div>
-        </div>
-      </div>
-      {% endif %}
+  <div class="hero-text fade-up">
+    <h1>
+      Virtual Healthcare<br/>
+      When You<br/>
+      <span class="highlight">Need It Most.</span>
+    </h1>
+    <p class="hero-subtitle">
+      For Anyone, Anywhere, at Anytime.
+    </p>
+    <div class="hero-cta">
+      <a href="mode_select.html" class="btn-primary" id="hero-start-btn" style="padding:0.85rem 2.4rem; font-size:0.95rem;">Join Now</a>
     </div>
-    {% endif %}
-
-  </div><!-- /form-card -->
-
-  <!-- Legend -->
-  <div class="legend">
-    <div class="legend-item"><div class="dot g"></div>L0 Non-Urgent</div>
-    <div class="legend-item"><div class="dot g"></div>L1 Less Urgent</div>
-    <div class="legend-item"><div class="dot y"></div>L2 Urgent</div>
-    <div class="legend-item"><div class="dot r"></div>L3 Life-threatening</div>
   </div>
+  <div class="hero-image-badge">
+    <div class="badge-pulse"></div>
+    <span class="badge-text">AI Engine Active</span>
+  </div>
+</section>
 
-</div><!-- /page -->
+<!-- ─────────── TAGLINE MARQUEE ─────────── -->
+<div class="tagline-bar">
+  <div class="tagline-inner">
+    <span>Certified <span class="tagline-dot">●</span> Responsive <span class="tagline-dot">●</span> Compassionate</span>
+    <span>AI-Powered Triage <span class="tagline-dot">●</span> Real-Time Analysis <span class="tagline-dot">●</span> 24/7 Access</span>
+    <span>Smart OCR <span class="tagline-dot">●</span> Hospital Locator <span class="tagline-dot">●</span> Emergency Alerts</span>
+    <!-- Duplicate for seamless loop -->
+    <span>Certified <span class="tagline-dot">●</span> Responsive <span class="tagline-dot">●</span> Compassionate</span>
+    <span>AI-Powered Triage <span class="tagline-dot">●</span> Real-Time Analysis <span class="tagline-dot">●</span> 24/7 Access</span>
+    <span>Smart OCR <span class="tagline-dot">●</span> Hospital Locator <span class="tagline-dot">●</span> Emergency Alerts</span>
+  </div>
+</div>
+
+<!-- ─────────── FEATURES ─────────── -->
+<section class="section" id="features">
+  <div class="section-header fade-up">
+    <div class="section-label">What We Offer</div>
+    <h2>Intelligent. Fast. Reliable.</h2>
+    <p>Our AI-driven platform provides comprehensive health analysis in seconds, from initial assessment to hospital recommendation.</p>
+  </div>
+  <div class="features-grid">
+    <a href="manual_entry.html" class="feature-card fade-up" style="text-decoration: none; color: inherit; display: block;">
+      <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B3D2F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <h3>ML Triage Engine</h3>
+      <p>Advanced machine learning model trained on thousands of clinical records to predict triage severity levels instantly.</p>
+    </a>
+    <a href="locator.html?type=hospital" class="feature-card fade-up" style="text-decoration: none; color: inherit; display: block;">
+      <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B3D2F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1"/><rect x="5" y="2" width="14" height="19" rx="2"/></svg></div>
+      <h3>Hospital Locator</h3>
+      <p>GPS-based nearby hospital finder using Google Places &amp; OpenStreetMap. Finds the closest ERs based on your location.</p>
+    </a>
+    <a href="locator.html?type=pharmacy" class="feature-card fade-up" style="text-decoration: none; color: inherit; display: block;">
+      <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B3D2F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 21V11M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M5 11h14"/></svg></div>
+      <h3>Pharmacy Finder</h3>
+      <p>Locate nearby pharmacies for your prescribed medications. Integrated with the AI agent for smart recommendations.</p>
+    </a>
+    <a href="document_upload.html" class="feature-card fade-up" style="text-decoration: none; color: inherit; display: block;">
+      <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B3D2F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+      <h3>Smart OCR Scanner</h3>
+      <p>Upload prescriptions or lab reports — our computer vision model extracts text and feeds it into the clinical analysis.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ─────────── HOW IT WORKS ─────────── -->
+<section class="how-section" id="how-it-works">
+  <div class="how-left">
+    <div class="how-image fade-up">
+      <img src="../assets/images/printest_picture.png" alt="Health App Mockup"/>
+    </div>
+  </div>
+  
+  <div class="how-right">
+    <div class="how-right-header fade-up">
+      <h2>How It Works</h2>
+    </div>
+    <div class="how-steps fade-up">
+      <div class="how-step">
+        <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 -9 -9c0 1.48 .36 2.89 1 4.12l-1.5 4.5l4.5 -1.5c1.23 .64 2.64 1 4.12 1z"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div>
+        <div>
+          <h3>Enter Your Vitals</h3>
+          <p>Input your heart rate, blood pressure, temperature, SpO2, and symptoms through our clean form interface.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 14h6"/><path d="M9 10h6"/><path d="M18 10l2 -2"/></svg></div>
+        <div>
+          <h3>AI Analyzes Instantly</h3>
+          <p>Our ML model predicts your triage level while the AI agent searches clinical guidelines and prepares a detailed assessment.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="10" y1="16" x2="14" y2="16"/></svg></div>
+        <div>
+          <h3>Get Your Report</h3>
+          <p>Receive a comprehensive clinical summary, triage classification, and nearby hospital suggestions — all in under 10 seconds.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── CAPABILITIES ─────────── -->
+<section class="section" id="capabilities">
+  <div class="section-header fade-up">
+    <div class="section-label">Platform Capabilities</div>
+    <h2>Built for Every Scenario</h2>
+    <p>Whether you're a walk-in patient or arriving by ambulance, our system adapts to your situation.</p>
+  </div>
+  <div class="capabilities-grid fade-up">
+    <div class="cap-card">
+      <div class="cap-num">01</div>
+      <h3>Manual Vitals Entry</h3>
+      <p>Complete form-based interface to input all vital signs, symptoms, and medical history manually.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">02</div>
+      <h3>Hardware Band Mode</h3>
+      <p>Connect your IoT health band to automatically stream real-time vitals directly to the AI engine.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">03</div>
+      <h3>Emergency Routing</h3>
+      <p>Critical triage levels trigger automatic hospital search and emergency email alerts to your contacts.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">04</div>
+      <h3>Visit History</h3>
+      <p>Complete audit trail of every visit — vitals, GPS location, triage results, and AI summaries stored securely.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">05</div>
+      <h3>Clinical Guidelines</h3>
+      <p>RAG-powered retrieval of medical guidelines from trusted sources, feeding context to the AI agent.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">06</div>
+      <h3>Prescription OCR</h3>
+      <p>Computer vision extracts text from uploaded prescriptions and lab reports for deeper clinical analysis.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">07</div>
+      <h3>Multi-Modal AI Agent</h3>
+      <p>LangGraph-powered reasoning engine that combines ML predictions, OCR data, and context for decisions.</p>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">08</div>
+      <h3>Secure Data</h3>
+      <p>JWT authentication, local SQLite primary storage with Neon PostgreSQL cloud backup for reliability.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── TESTIMONIALS ─────────── -->
+<section class="section testimonials-bg" id="stories">
+  <div class="section-header fade-up">
+    <div class="section-label">Real Experiences</div>
+    <h2>Patient Stories</h2>
+  </div>
+  <div class="testimonial-card fade-up" id="testimonial-card">
+    <blockquote id="testimonial-quote">
+      "I was feeling severe chest pain at 2 AM. NexaCare analyzed my vitals in seconds, classified it as urgent, and found the nearest hospital just 3 km away. The speed saved critical time."
+    </blockquote>
+    <div class="testimonial-author" id="testimonial-author">Rahul M., 34</div>
+  </div>
+  <div class="testimonial-dots">
+    <span class="active" onclick="showTestimonial(0)"></span>
+    <span onclick="showTestimonial(1)"></span>
+    <span onclick="showTestimonial(2)"></span>
+  </div>
+</section>
+
+<!-- ─────────── FOOTER ─────────── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">NexaCare</div>
+      <p class="footer-desc">AI-powered health triage for everyone, everywhere, at any time. Built as a Final Year Project with cutting-edge ML and agentic AI technologies.</p>
+      <form class="footer-email-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+        <input type="email" placeholder="Your email address" required/>
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#capabilities">Capabilities</a></li>
+        <li><a href="#stories">Testimonials</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="login.html">Log In</a></li>
+        <li><a href="register.html">Create Account</a></li>
+        <li><a href="mode_select.html">Start Triage</a></li>
+        <li><a href="profile.html">My Profile</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:mahaveerregar738@gmail.com">mahaveerregar738@gmail.com</a></li>
+        <li><a href="#">GitHub Repository</a></li>
+        <li><a href="#">Project Documentation</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2026 NexaCare. Final Year Project — Phase 2.</span>
+  </div>
+</footer>
+
+<script>
+  // ─── Smart Nav: hide on scroll down, show on scroll up ───
+  (function() {
+    const nav = document.getElementById('main-nav');
+    let lastScroll = 0;
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScroll = window.pageYOffset;
+
+          // Add shadow when scrolled
+          nav.classList.toggle('scrolled', currentScroll > 20);
+
+          if (currentScroll > lastScroll && currentScroll > 100) {
+            // Scrolling DOWN & past 100px → hide nav
+            nav.classList.add('nav-hidden');
+          } else {
+            // Scrolling UP → show nav
+            nav.classList.remove('nav-hidden');
+          }
+
+          lastScroll = currentScroll;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  })();
+
+  // ─── Fade-up on scroll ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ─── Auth-aware nav ───
+  (function() {
+    const tk = localStorage.getItem('access_token');
+    const savedName = localStorage.getItem('user_name') || 'User';
+    const savedDp = localStorage.getItem('user_dp') || '../Icons/Profile Icon.png';
+    
+    if (tk) {
+      document.getElementById('nav-actions').innerHTML = `
+        <a href="index.html" style="text-decoration:none; color:var(--forest); font-weight:600; font-size:0.9rem;">Home</a>
+        <a href="mode_select.html" style="text-decoration:none; color:var(--forest); font-weight:600; font-size:0.9rem;">Dashboard</a>
+        <a href="profile.html" style="width:40px; height:40px; border-radius:50%; overflow:hidden; border:2px solid var(--forest); display:inline-block; transition:all 0.2s;">
+          <img src="${savedDp}" alt="Profile" style="width:100%; height:100%; object-fit:cover;">
+        </a>
+      `;
+      document.getElementById('hero-start-btn').textContent = 'Go to Dashboard';
+    }
+  })();
+
+  function logout() {
+    localStorage.removeItem('access_token');
+    window.location.href = 'index.html';
+  }
+
+  // ─── Testimonials carousel ───
+  const testimonials = [
+    { quote: '"I was feeling severe chest pain at 2 AM. NexaCare analyzed my vitals in seconds, classified it as urgent, and found the nearest hospital just 3 km away. The speed saved critical time."', author: 'Rahul M., 34' },
+    { quote: '"As a medical student, I use NexaCare to cross-reference my triage assessments. The AI agent\'s reasoning is remarkably thorough and the clinical guidelines context is invaluable."', author: 'Priya S., 24' },
+    { quote: '"The pharmacy locator feature is brilliant. After my consultation, it immediately found pharmacies near me that carry my prescribed medication. Truly a one-stop health platform."', author: 'Anil K., 45' },
+  ];
+
+  function showTestimonial(idx) {
+    document.getElementById('testimonial-quote').textContent = testimonials[idx].quote;
+    document.getElementById('testimonial-author').textContent = testimonials[idx].author;
+    document.querySelectorAll('.testimonial-dots span').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+  }
+
+  // Auto-rotate testimonials
+  let currentT = 0;
+  setInterval(() => {
+    currentT = (currentT + 1) % testimonials.length;
+    showTestimonial(currentT);
+  }, 5000);
+</script>
+
 </body>
 </html>

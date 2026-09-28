@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Profile - NexaCare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --forest:     #1B3D2F;
+      --forest-l:   #2A5A42;
+      --cream:      #F5F0E8;
+      --cream-d:    #EDE7DB;
+      --lime:       #C8E64A;
+      --lime-d:     #B0CC2E;
+      --white:      #FFFFFF;
+      --text-muted: #5A7A6A;
+      --border:     #D8D0C4;
+      --danger:     #DC2626;
+      --danger-l:   #FEF2F2;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--forest); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(245, 240, 232, 0.96); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4rem; height: 80px;
+    }
+    .nav-brand {
+      font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.6rem;
+      color: var(--forest); display: flex; align-items: center; gap: 8px; text-decoration: none;
+    }
+    .nav-brand-dot {
+      width: 10px; height: 10px; background: var(--lime); border-radius: 50%; display: inline-block;
+    }
+    .nav-actions { display: flex; gap: 1.5rem; align-items: center; }
+    .btn-ghost {
+      background: transparent; color: var(--forest); font-weight: 700; font-size: 0.9rem;
+      padding: 0.6rem 1.5rem; border-radius: 50px; text-decoration: none;
+      border: 1px solid var(--border); cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--forest); background: var(--white); }
+    
+    .nav-profile {
+      width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+    }
+    .nav-profile:hover { border-color: var(--forest); }
+    .nav-profile img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* PROFILE PAGE */
+    .profile-container {
+      max-width: 800px; margin: 4rem auto; padding: 0 2rem; flex: 1; width: 100%;
+      animation: fadeUp 0.6s ease both;
+    }
+    .profile-header { text-align: center; margin-bottom: 3rem; }
+    .profile-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--forest-l); font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .profile-tag::before { content: ''; width: 24px; height: 2px; background: var(--lime); border-radius: 2px; }
+    .profile-header h1 {
+      font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: var(--forest); line-height: 1.2;
+    }
+    .profile-header h1 span { color: var(--forest-l); font-style: italic; }
+    .profile-header p { color: var(--text-muted); font-size: 1.05rem; margin-top: 0.5rem; }
+
+    .profile-card {
+      background: var(--white); border-radius: 24px; padding: 3.5rem 3rem;
+      border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(27,61,47,0.06);
+      margin-bottom: 2rem;
+    }
+
+    /* DP UPLOAD */
+    .dp-section {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 3.5rem;
+      position: relative;
+    }
+    .dp-wrapper {
+      width: 130px; height: 130px; border-radius: 50%; overflow: hidden;
+      border: 4px solid var(--cream); box-shadow: 0 10px 30px rgba(27,61,47,0.1);
+      position: relative; cursor: pointer; transition: all 0.3s ease;
+    }
+    .dp-wrapper:hover { border-color: var(--lime); transform: scale(1.02); }
+    .dp-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+    .dp-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; background: rgba(27,61,47,0.7);
+      color: var(--white); text-align: center; padding: 8px 0; font-size: 0.8rem;
+      font-weight: 700; transform: translateY(100%); transition: transform 0.2s;
+    }
+    .dp-wrapper:hover .dp-overlay { transform: translateY(0); }
+    #dp-upload { display: none; }
+
+    /* FORM GRID */
+    .form-section-title {
+      font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700;
+      color: var(--forest); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem; display: flex; align-items: center; gap: 10px;
+    }
+    .form-section-title svg { width: 22px; height: 22px; stroke: var(--forest); }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 0.9rem; font-weight: 700; color: var(--forest); margin-bottom: 8px;
+    }
+    .form-group input {
+      padding: 0.9rem 1.1rem; border: 1px solid transparent; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; color: var(--forest);
+      background: var(--cream-d); outline: none; transition: all 0.2s ease;
+    }
+    .form-group input:focus { background: var(--white); border-color: var(--lime); box-shadow: 0 0 0 4px rgba(200, 230, 74, 0.2); }
+    .form-group input:disabled { background: var(--cream); opacity: 0.7; cursor: not-allowed; }
+    .form-group input::placeholder { color: var(--text-muted); opacity: 0.7; }
+    
+    .btn-save {
+      background: var(--forest); color: var(--white); font-weight: 700; font-size: 1rem;
+      padding: 1.1rem 2.5rem; border-radius: 50px; border: none; cursor: pointer; font-family: inherit;
+      transition: all 0.25s ease; width: 100%; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-save:hover { background: var(--lime); color: var(--forest); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(27,61,47,0.15); }
+
+    .logout-btn-container { text-align: center; margin-top: 2rem; padding-bottom: 2rem; }
+    .btn-logout {
+      background: transparent; color: var(--danger); border: 1px solid var(--danger);
+      font-weight: 700; padding: 0.9rem 2.5rem; border-radius: 50px; cursor: pointer;
+      font-size: 0.9rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-logout:hover { background: var(--danger-l); transform: translateY(-1px); }
+
+    footer { background: var(--white); color: var(--text-muted); text-align: center; padding: 2.5rem; font-size: 0.9rem; margin-top: auto; border-top: 1px solid var(--border); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+    @media(max-width:768px) { nav { padding: 0 2rem; } .profile-container { padding: 0 1.5rem; } .form-grid { grid-template-columns: 1fr; } .profile-card { padding: 2.5rem 1.5rem; } }
+  </style>
+</head>
+<body>
+
+<script>
+  const token = localStorage.getItem('access_token');
+  if (!token) { window.location.href = 'login.html'; }
+  function logout() { localStorage.removeItem('access_token'); window.location.href = 'login.html'; }
+</script>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; margin-right: 4px; vertical-align: middle; border-radius: 4px;">NexaCare
+  </a>
+  <div class="nav-actions">
+    <a href="index.html" class="btn-ghost" style="text-decoration:none; color:var(--forest); font-weight:600;">Home</a>
+    <a href="dashboard.html" class="btn-ghost">← Dashboard</a>
+    <a href="profile.html" class="nav-profile">
+      <img id="nav-dp" src="" alt="Profile">
+    </a>
+  </div>
+</nav>
+
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="profile-tag">Account Settings</div>
+    <h1>Your <span>Profile</span></h1>
+    <p>Manage your personal information and security settings.</p>
+  </div>
+
+  <div class="profile-card">
+    <!-- DP Section -->
+    <div class="dp-section">
+      <label class="dp-wrapper" for="dp-upload">
+        <img id="profile-img" src="" alt="DP">
+        <div class="dp-overlay">Change Photo</div>
+      </label>
+      <input type="file" id="dp-upload" accept="image/*" onchange="updateDP(event)">
+    </div>
+
+    <!-- Details Form -->
+    <form onsubmit="saveProfile(event)">
+      <div class="form-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Personal Details
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="fullname" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="john@example.com" disabled title="Email cannot be changed directly">
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="30" min="1" max="120">
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="gender" style="padding: 0.9rem 1.1rem; border: 1px solid transparent; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 1rem; color: var(--forest); background: var(--cream-d); outline: none;">
+            <option value="" disabled selected>Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Chronic Conditions</label>
+          <input type="text" id="conditions" placeholder="e.g., Diabetes, Hypertension">
+        </div>
+      </div>
+
+      <div class="form-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Security Settings
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="new_password" placeholder="Leave blank to keep current">
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" id="confirm_password" placeholder="Confirm new password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Save Changes
+      </button>
+    </form>
+  </div>
+  
+  <div class="logout-btn-container">
+    <button class="btn-logout" onclick="logout()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      Log out securely
+    </button>
+  </div>
+</div>
+
+<footer>
+  NexaCare Platform &nbsp;·&nbsp; Powered by Machine Learning &amp; LangGraph
+</footer>
+
+<script>
+  // Fetch user data on load
+  window.addEventListener('load', async () => {
+    try {
+      const response = await fetch('http://localhost:8000/user/history', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.profile) {
+          const profile = data.profile;
+          // Save locally for other pages to use (like nav bars)
+          localStorage.setItem('user_name', profile.name);
+          localStorage.setItem('user_email', profile.email);
+
+          document.getElementById('fullname').value = profile.name;
+          document.getElementById('email').value = profile.email || localStorage.getItem('user_email') || 'patient@example.com';
+          document.getElementById('age').value = profile.age || '';
+          if (profile.gender) document.getElementById('gender').value = profile.gender;
+          document.getElementById('conditions').value = profile.chronic_conditions || '';
+          
+          const savedDp = localStorage.getItem('user_dp') || '../Icons/Profile Icon.png';
+          document.getElementById('profile-img').src = savedDp;
+          document.getElementById('nav-dp').src = savedDp;
+          return;
+        }
+      }
+    } catch(e) { console.warn("Failed to load profile", e); }
+    
+    // Fallback if API fails
+    const savedName = localStorage.getItem('user_name') || 'Patient';
+    const savedDp = localStorage.getItem('user_dp') || '../Icons/Profile Icon.png';
+    document.getElementById('fullname').value = savedName;
+    document.getElementById('profile-img').src = savedDp;
+    document.getElementById('nav-dp').src = savedDp;
+  });
+
+  function updateDP(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('profile-img').src = e.target.result;
+        document.getElementById('nav-dp').src = e.target.result;
+        localStorage.setItem('user_dp', e.target.result); // Cache locally for demo
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function saveProfile(event) {
+    event.preventDefault();
+    const name = document.getElementById('fullname').value;
+    const pwd1 = document.getElementById('new_password').value;
+    const pwd2 = document.getElementById('confirm_password').value;
+
+    if(pwd1 && pwd1 !== pwd2) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    localStorage.setItem('user_name', name);
+    document.getElementById('nav-dp').src = localStorage.getItem('user_dp') || '../Icons/Profile Icon.png';
+    
+    alert("Profile locally updated! (Note: API route PUT /user/profile not yet implemented)");
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Locator Tool - NexaCare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --forest:     #1B3D2F;
+      --forest-l:   #2A5A42;
+      --cream:      #F5F0E8;
+      --cream-d:    #EDE7DB;
+      --lime:       #C8E64A;
+      --lime-d:     #B0CC2E;
+      --white:      #FFFFFF;
+      --text-muted: #5A7A6A;
+      --border:     #D8D0C4;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--forest); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(245, 240, 232, 0.96); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4rem; height: 72px;
+    }
+    .nav-brand { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.6rem; color: var(--forest); display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-brand-dot { width: 10px; height: 10px; background: var(--lime); border-radius: 50%; display: inline-block; }
+    .nav-actions { display: flex; gap: 1.5rem; align-items: center; }
+    .btn-ghost {
+      background: transparent; color: var(--forest); font-weight: 700; font-size: 0.9rem;
+      padding: 0.6rem 1.5rem; border-radius: 50px; text-decoration: none;
+      border: 1px solid var(--border); cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--forest); background: var(--white); }
+    .nav-profile { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border); transition: all 0.2s; }
+    .nav-profile img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* LAYOUT */
+    .container { max-width: 900px; margin: 3rem auto; padding: 0 2rem; flex: 1; width: 100%; }
+    .header { text-align: center; margin-bottom: 3rem; }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .header p { color: var(--text-muted); font-size: 1.05rem; }
+
+    /* SEARCH BAR */
+    .search-card {
+      background: var(--white); border-radius: 24px; padding: 2.5rem;
+      border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(27,61,47,0.06);
+      margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;
+    }
+    .search-input-group { flex: 1; display: flex; flex-direction: column; }
+    .search-input-group label { font-size: 0.9rem; font-weight: 700; color: var(--forest); margin-bottom: 8px; }
+    .search-input-group input {
+      padding: 1rem 1.2rem; border: 1px solid var(--border); border-radius: 12px;
+      font-family: inherit; font-size: 1rem; color: var(--forest); background: var(--cream-d);
+      outline: none; transition: all 0.2s;
+    }
+    .search-input-group input:focus { background: var(--white); border-color: var(--lime); }
+    
+    .btn-search {
+      background: var(--forest); color: var(--white); font-weight: 700; font-size: 1rem;
+      padding: 1rem 2.5rem; border-radius: 50px; border: none; cursor: pointer; font-family: inherit;
+      transition: all 0.25s ease; height: 52px; align-self: flex-end; display: flex; align-items: center; gap: 8px;
+    }
+    .btn-search:hover { background: var(--lime); color: var(--forest); transform: translateY(-2px); }
+
+    .btn-gps {
+      background: var(--cream-d); color: var(--forest); font-weight: 700; font-size: 0.9rem;
+      padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+      font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+      margin-top: 8px; align-self: flex-start;
+    }
+    .btn-gps:hover { background: var(--border); }
+
+    /* RESULTS & MAP LAYOUT */
+    .content-layout {
+      display: grid; grid-template-columns: 1fr 420px; gap: 2rem; align-items: start;
+    }
+    #map-container { display: none; position: sticky; top: 100px; }
+    #map {
+      height: 600px; border-radius: 24px; border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(27,61,47,0.06); z-index: 10;
+    }
+    .results-grid { display: flex; flex-direction: column; gap: 1.5rem; }
+    @media(max-width: 900px) {
+      .content-layout { grid-template-columns: 1fr; }
+      #map-container { position: static; }
+      #map { height: 400px; }
+    }
+    .result-card {
+      background: var(--white); border-radius: 16px; padding: 1.8rem;
+      border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(27,61,47,0.04);
+      display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.2s;
+    }
+    .result-card:hover { transform: translateY(-2px); border-color: var(--lime); }
+    .result-header { display: flex; justify-content: space-between; align-items: center; }
+    .result-header h3 { font-family: 'DM Sans', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .badge { background: var(--cream-d); color: var(--forest); padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
+    .result-detail { display: flex; align-items: flex-start; gap: 8px; color: var(--text-muted); font-size: 0.95rem; }
+    .result-detail svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+    
+    .btn-map {
+      background: transparent; color: var(--forest); font-weight: 700; font-size: 0.85rem;
+      padding: 0.5rem 1rem; border-radius: 50px; border: 1px solid var(--forest);
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 0.5rem; transition: all 0.2s;
+    }
+    .btn-map:hover { background: var(--forest); color: var(--white); }
+
+    .loader { display: none; text-align: center; padding: 2rem; color: var(--text-muted); font-weight: 700; font-style: italic; }
+    footer { background: var(--white); color: var(--text-muted); text-align: center; padding: 2rem; font-size: 0.9rem; margin-top: auto; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand"><img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; margin-right: 4px; vertical-align: middle; border-radius: 4px;">NexaCare</a>
+  <div class="nav-actions">
+    <a href="index.html" class="btn-ghost" style="border:none;">Home</a>
+    <a href="mode_select.html" class="btn-ghost">Dashboard</a>
+    <a href="profile.html" class="nav-profile"><img id="nav-dp" src="" alt="Profile"></a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1 id="page-title">Facility Locator</h1>
+    <p id="page-desc">Find nearby healthcare facilities instantly using GPS and smart routing.</p>
+  </div>
+
+  <div class="search-card">
+    <div class="search-input-group">
+      <label>Your Location / Area</label>
+      <input type="text" id="location-input" placeholder="e.g. Mumbai, Andheri West or Zip code">
+      <button class="btn-gps" onclick="useCurrentLocation()" id="btn-gps">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+        Use My GPS Location
+      </button>
+    </div>
+    <button class="btn-search" onclick="searchFacilities()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      Search
+    </button>
+  </div>
+
+  <div id="loader" class="loader">Scanning networks for facilities...</div>
+    <div class="content-layout">
+      <div id="map-container">
+        <div id="map"></div>
+      </div>
+      <div class="results-grid" id="results-grid"></div>
+    </div>
+  </div>
+
+<footer>
+  NexaCare Platform &nbsp;·&nbsp; Powered by Machine Learning &amp; LangGraph
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  let currentType = "hospital";
+  let map = null;
+  let markers = [];
+  let userLat = null;
+  let userLon = null;
+
+  window.addEventListener('load', () => {
+    // Check URL params for type
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('type') === 'pharmacy') {
+      currentType = "pharmacy";
+      document.title = "Pharmacy Finder - NexaCare";
+      document.getElementById('page-title').innerText = "Pharmacy Finder";
+      document.getElementById('page-desc').innerText = "Locate nearby pharmacies for your prescribed medications.";
+    } else {
+      document.title = "Hospital Locator - NexaCare";
+      document.getElementById('page-title').innerText = "Hospital Locator";
+      document.getElementById('page-desc').innerText = "Find the closest ERs and general hospitals based on your location.";
+    }
+
+    // Set avatar
+    const savedName = localStorage.getItem('user_name') || 'User';
+    const savedDp = localStorage.getItem('user_dp') || '../Icons/Profile Icon.png';
+    document.getElementById('nav-dp').src = savedDp;
+  });
+
+  async function useCurrentLocation() {
+    const btn = document.getElementById('btn-gps');
+    const input = document.getElementById('location-input');
+    
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    btn.innerHTML = "Locating...";
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      
+      try {
+        // Reverse geocode using OpenStreetMap Nominatim
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`);
+        const data = await resp.json();
+        
+        let cityStr = "";
+        if (data && data.address) {
+          const a = data.address;
+          cityStr = a.suburb || a.neighbourhood || a.city_district || a.city || a.town || a.county || "";
+          if (cityStr && a.state) cityStr += ", " + a.state;
+        }
+        
+        input.value = cityStr || `${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Located!`;
+        
+        // Auto-search after finding location
+        setTimeout(() => searchFacilities(), 500);
+      } catch (err) {
+        alert("Could not determine city name from coordinates.");
+        btn.innerHTML = "Use My GPS Location";
+        btn.disabled = false;
+      }
+    }, (err) => {
+      alert("Location access denied. Please type your area manually.");
+      btn.innerHTML = "Use My GPS Location";
+      btn.disabled = false;
+    });
+  }
+
+  async function searchFacilities() {
+    const loc = document.getElementById('location-input').value.trim();
+    if (!loc) { alert("Please enter a location"); return; }
+
+    document.getElementById('results-grid').innerHTML = "";
+    document.getElementById('loader').style.display = "block";
+
+    try {
+      const response = await fetch(`http://localhost:8000/user/locator?location=${encodeURIComponent(loc)}&place_type=${currentType}`);
+      const data = await response.json();
+      document.getElementById('loader').style.display = "none";
+      renderResults(data);
+    } catch (e) {
+      document.getElementById('loader').style.display = "none";
+      document.getElementById('results-grid').innerHTML = `<p style="color:var(--danger)">Error connecting to server. Please try again.</p>`;
+    }
+  }
+
+  function renderResults(results) {
+    const grid = document.getElementById('results-grid');
+    const mapContainer = document.getElementById('map-container');
+    
+    if (!results || results.length === 0 || results[0].name.includes("No ") || results[0].name.includes("Location not found") || results[0].source === "error") {
+      mapContainer.style.display = 'none';
+      let errorMsg = results && results.length > 0 ? results[0].name : "No facilities found in that area.";
+      grid.innerHTML = `
+        <div style="text-align:center; padding:3rem; background:var(--white); border-radius:16px; border:1px solid var(--border);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin-bottom:1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <h3 style="margin-bottom:0.5rem;">${errorMsg}</h3>
+            <p style="color:var(--text-muted); font-size:0.95rem;">OpenStreetMap couldn't identify this specific location. Try searching for a broader area, a famous landmark, or the city name (e.g. "Surat" or "Vesu, Surat").</p>
+        </div>`;
+      return;
+    }
+
+    mapContainer.style.display = 'block';
+    
+    // Initialize map if needed
+    if (!map) {
+      map = L.map('map');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    }
+    
+    // Clear old markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    // Plot User Location if available
+    let bounds = [];
+    if (userLat && userLon) {
+      let userIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style="background-color:#C8E64A;width:18px;height:18px;border-radius:50%;border:3px solid #1B3D2F;box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [24, 24], iconAnchor: [12, 12]
+      });
+      let userMarker = L.marker([userLat, userLon], {icon: userIcon}).addTo(map).bindPopup("<b>You are here</b>");
+      markers.push(userMarker);
+      bounds.push([userLat, userLon]);
+    }
+
+    let html = "";
+    results.forEach((r, idx) => {
+      let phoneText = (r.phone && r.phone !== 'N/A') ? r.phone : 'Phone not available';
+      
+      html += `
+        <div class="result-card" onmouseover="highlightMarker(${idx})" onmouseout="resetMarker(${idx})">
+          <div class="result-header">
+            <h3>${r.name}</h3>
+            ${r.rating && r.rating !== 'N/A' ? `<div class="badge">⭐ ${r.rating}</div>` : ''}
+          </div>
+          <div class="result-detail">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            ${r.address || 'Address not available'}
+          </div>
+          <div class="result-detail">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            ${phoneText}
+          </div>
+          ${r.maps_url ? `<a href="${r.maps_url}" target="_blank" class="btn-map">Directions ↗</a>` : ''}
+        </div>
+      `;
+
+      // Map Marker
+      if (r.lat && r.lon) {
+        let m = L.marker([r.lat, r.lon]).addTo(map).bindPopup(`<b>${r.name}</b><br>${r.address}`);
+        markers.push(m);
+        bounds.push([r.lat, r.lon]);
+      }
+    });
+    grid.innerHTML = html;
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, {padding: [50, 50]});
+    }
+  }
+
+  function highlightMarker(idx) {
+    // Basic interaction: open popup
+    let realIdx = userLat ? idx + 1 : idx; // Offset if user marker exists
+    if (markers[realIdx]) markers[realIdx].openPopup();
+  }
+  function resetMarker(idx) {
+    let realIdx = userLat ? idx + 1 : idx;
+    if (markers[realIdx]) markers[realIdx].closePopup();
+  }
+</script>
+</body>
+</html>

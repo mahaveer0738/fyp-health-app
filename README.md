@@ -24,7 +24,8 @@
 
 ### 🤖 2. Agentic LLM Workflow (LangGraph)
 - Instead of a simple chatbot, the system operates as an **Autonomous Agent**.
-- Evaluates the ML prediction, extracts text from uploaded prescriptions (Vision OCR), and queries a Vector Database for clinical guidelines (RAG).
+- **Local FAISS RAG Engine**: Uses local HuggingFace embeddings (`all-MiniLM-L6-v2`) to chunk medical documents and build an in-memory vector database, extracting relevant clinical guidelines without blowing up token limits or requiring external API calls.
+- Evaluates the ML prediction, extracts text from uploaded prescriptions (Vision OCR), and queries the FAISS Database for clinical guidelines (RAG).
 - **Tool Calling**: Automatically decides when to use external tools like `hospital_locator` or `pharmacy_locator`.
 
 ### 🔐 3. Patient Authentication & Memory
@@ -54,7 +55,7 @@ graph TD
     subgraph "Data Preparation"
         N1[prepare_vitals_node<br>Runs ML Random Forest] --> N2
         N2[ocr_node<br>Vision Extraction] --> N3
-        N3[retrieval_node<br>Queries ChromaDB]
+        N3[retrieval_node<br>Queries FAISS]
     end
 
     N3 --> N4
@@ -133,7 +134,7 @@ While this project is fully functional, there are several exciting features plan
    - *Plan:* Transition away from storing JWTs in `localStorage` and move to `HttpOnly` secure cookies to prevent XSS attacks in a production environment.
    
 3. **Advanced RAG Integration**
-   - *Plan:* Connect the ChromaDB to live, constantly updating medical journal APIs rather than static PDF uploads.
+   - *Plan:* Connect the FAISS Database to live, constantly updating medical journal APIs rather than static PDF uploads.
    
 4. **Frontend Framework Migration**
    - *Plan:* Port the Vanilla HTML/JS frontend to **React** or **Next.js** for smoother state management, faster routing, and dynamic UI animations.

@@ -3,135 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - FYP Health App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Login - NexaCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            --forest:     #1B3D2F;
+            --forest-l:   #2A5A42;
+            --cream:      #F5F0E8;
+            --cream-d:    #EDE7DB;
+            --lime:       #C8E64A;
+            --lime-d:     #B0CC2E;
+            --white:      #FFFFFF;
+            --text-muted: #5A7A6A;
+            --border:     #D8D0C4;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background);
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--cream);
+            color: var(--forest);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             min-height: 100vh;
         }
 
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; font-size: 1.8rem;
+            color: var(--forest);
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; margin-bottom: 2.5rem;
+        }
+        .nav-brand-dot {
+            width: 12px; height: 12px; background: var(--lime);
+            border-radius: 50%; display: inline-block;
+        }
+
         .container {
-            background-color: var(--surface);
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: var(--white);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(27,61,47,0.08);
             width: 100%;
-            max-width: 400px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
+            max-width: 440px;
             border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.15s ease;
         }
 
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
+            color: var(--forest);
+        }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block; font-size: 0.9rem; font-weight: 700;
+            margin-bottom: 0.5rem; color: var(--forest);
+        }
+        .form-group input {
+            width: 100%; padding: 0.85rem 1rem;
+            background: var(--cream-d);
+            border: 1px solid transparent;
+            border-radius: 0.75rem; font-size: 1rem;
+            color: var(--forest); font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s ease;
+        }
+        .form-group input::placeholder { color: var(--text-muted); opacity: 0.7; }
         .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none; background: var(--white);
+            border-color: var(--lime);
+            box-shadow: 0 0 0 4px rgba(200, 230, 74, 0.2);
         }
 
         .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
+            width: 100%; padding: 0.9rem;
+            background-color: var(--forest); color: var(--white);
+            border: none; border-radius: 50px;
+            font-size: 1.05rem; font-weight: 700;
+            cursor: pointer; font-family: inherit;
+            transition: all 0.25s ease;
+            margin-top: 0.5rem;
         }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-        }
+        .btn:hover { background-color: var(--lime); color: var(--forest); transform: translateY(-2px); }
 
         .footer {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
+            text-align: center; margin-top: 2rem;
+            font-size: 0.9rem; color: var(--text-muted);
         }
-
         .footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
+            color: var(--forest); text-decoration: none; font-weight: 700;
+            transition: color 0.2s; border-bottom: 2px solid transparent;
         }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
+        .footer a:hover { color: var(--lime-d); border-bottom-color: var(--lime-d); }
 
         .error-message {
-            color: #dc2626;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            text-align: center;
-            display: none;
+            color: #dc2626; font-size: 0.875rem; font-weight: 500;
+            margin-top: 0.5rem; text-align: center; display: none;
+            background: #fef2f2; padding: 0.5rem; border-radius: 0.5rem;
         }
     </style>
 </head>
 <body>
 
+<a href="index.html" class="nav-brand">
+    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 56px; width: auto; margin-right: 4px; vertical-align: middle; border-radius: 4px;">NexaCare
+</a>
+
 <div class="container">
     <div class="header">
         <h1>Welcome Back</h1>
-        <p>Login to your FYP Health account</p>
+        <p>Login to your healthcare dashboard</p>
     </div>
 
     <form id="loginForm">
@@ -180,7 +165,22 @@
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('access_token', data.access_token);
-                window.location.href = 'dashboard.html';
+                
+                // Fetch user profile to get the actual name for the DP
+                try {
+                    const profileRes = await fetch('http://localhost:8000/user/history', {
+                        headers: { 'Authorization': `Bearer ${data.access_token}` }
+                    });
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        if(profileData.profile) {
+                            localStorage.setItem('user_name', profileData.profile.name);
+                            localStorage.setItem('user_email', profileData.profile.email);
+                        }
+                    }
+                } catch(e) { console.warn("Could not fetch profile info"); }
+
+                window.location.href = 'mode_select.html';
             } else {
                 errorMessage.style.display = 'block';
                 errorMessage.textContent = 'Invalid email or password';

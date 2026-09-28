@@ -2,7 +2,7 @@ Flask
 gunicorn
 numpy
 pandas
-scikit-learn
+scikit-learn==1.6.1
 scipy
 joblib
 setuptools
@@ -12,8 +12,10 @@ uvicorn[standard]
 pydantic
 langchain-core
 langgraph
-chromadb
 groq
+faiss-cpu
+sentence-transformers
+langchain-huggingface
 langchain-groq
 google-genai
 python-multipart
@@ -21,6 +23,10 @@ python-dotenv
 langchain-community
 pypdf
 SQLAlchemy
+bcrypt==3.2.2
 passlib[bcrypt]
 python-jose[cryptography]
 resend
+Pillow
+psycopg2-binary
+httpx
