@@ -1,6 +1,8 @@
 <div align="center">
+
+<img src="frontend/Icons/LOGO.png" alt="NexaCare Logo" height="150">
   
-# 🏥 NexaCare: AI-Powered ER Triage & Clinical Assistant
+# NexaCare: AI-Powered ER Triage & Clinical Assistant
   
 **An Autonomous Clinical Decision Support System and Patient Management Platform**
 
