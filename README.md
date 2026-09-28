@@ -96,7 +96,7 @@ graph TD
 Clone the repository and install the required dependencies:
 ```bash
 git clone https://github.com/mahaveer0738/fyp-health-app.git
-cd "fyp health-app/fyp app"
+cd "nexacare/fyp app"
 pip install -r requirements.txt
 ```
 
