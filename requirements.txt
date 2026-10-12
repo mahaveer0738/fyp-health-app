@@ -30,3 +30,4 @@ resend
 Pillow
 psycopg2-binary
 httpx
+onnxruntime

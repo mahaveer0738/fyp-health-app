@@ -8,11 +8,7 @@
     <style>
         :root {
             --forest:     #1B3D2F;
-            --forest-l:   #2A5A42;
-            --cream:      #F5F0E8;
-            --cream-d:    #EDE7DB;
-            --lime:       #C8E64A;
-            --lime-d:     #B0CC2E;
+            --forest-l:   #345946;
             --white:      #FFFFFF;
             --text-muted: #5A7A6A;
             --border:     #D8D0C4;
@@ -22,205 +18,272 @@
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background-color: var(--cream);
+            background: url('../soft_leaves.jpg') center/cover no-repeat fixed;
             color: var(--forest);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             min-height: 100vh;
             padding: 2rem;
+            backdrop-filter: blur(8px);
         }
 
-        .nav-brand {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700; font-size: 1.8rem;
-            color: var(--forest);
-            display: flex; align-items: center; gap: 10px;
-            text-decoration: none; margin-bottom: 0.5rem;
-        }
-        .nav-brand-dot {
-            width: 12px; height: 12px; background: var(--lime);
-            border-radius: 50%; display: inline-block;
-        }
-
-        .container {
+        .split-card {
             background-color: var(--white);
-            padding: 3rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 50px rgba(27,61,47,0.08);
+            border-radius: 2rem;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
             width: 100%;
-            max-width: 540px;
-            border: 1px solid var(--border);
+            max-width: 1100px;
+            height: 750px;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            background: url('../dark_leaves.jpg') right/cover no-repeat;
         }
 
-        .header { text-align: center; margin-bottom: 2.5rem; }
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
+        .form-area {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1.5rem 4rem;
+        }
+
+        .brand-logo {
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .brand-logo img {
+            height: 80px;
+            width: auto;
+        }
+
+        .form-area h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem;
             color: var(--forest);
+            text-align: center;
         }
-        .header p { color: var(--text-muted); font-size: 0.95rem; }
 
-        .form-group { margin-bottom: 1.5rem; }
-        
         .form-row {
-            display: flex; gap: 1.5rem; margin-bottom: 1.5rem;
+            display: flex; gap: 1rem;
         }
-        .form-row .form-group { flex: 1; margin-bottom: 0; }
-
+        .form-group { margin-bottom: 0.8rem; position: relative; flex: 1; }
         .form-group label {
-            display: block; font-size: 0.9rem; font-weight: 700;
-            margin-bottom: 0.5rem; color: var(--forest);
+            display: block; font-size: 0.75rem; font-weight: 700;
+            margin-bottom: 0.3rem; color: var(--text-muted);
         }
         .form-group input, .form-group select {
-            width: 100%; padding: 0.85rem 1rem;
-            background: var(--cream-d);
-            border: 1px solid transparent;
-            border-radius: 0.75rem; font-size: 1rem;
+            width: 100%; padding: 0.8rem 1.2rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 50px; font-size: 0.9rem;
             color: var(--forest); font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
-        .form-group input::placeholder { color: var(--text-muted); opacity: 0.7; }
         .form-group input:focus, .form-group select:focus {
-            outline: none; background: var(--white);
-            border-color: var(--lime);
-            box-shadow: 0 0 0 4px rgba(200, 230, 74, 0.2);
+            outline: none; border-color: var(--forest);
+            box-shadow: 0 0 0 4px rgba(27,61,47, 0.1);
         }
 
         .btn {
             width: 100%; padding: 0.9rem;
-            background-color: var(--forest); color: var(--white);
+            background-color: var(--forest-l); color: var(--white);
             border: none; border-radius: 50px;
-            font-size: 1.05rem; font-weight: 700;
+            font-size: 1rem; font-weight: 700;
             cursor: pointer; font-family: inherit;
-            transition: all 0.25s ease;
+            transition: all 0.3s ease;
             margin-top: 0.5rem;
+            box-shadow: 0 8px 20px rgba(27,61,47,0.2);
         }
-        .btn:hover { background-color: var(--lime); color: var(--forest); transform: translateY(-2px); }
+        .btn:hover { background-color: var(--forest); transform: translateY(-2px); box-shadow: 0 12px 25px rgba(27,61,47,0.3); }
 
-        .footer {
-            text-align: center; margin-top: 2rem;
-            font-size: 0.9rem; color: var(--text-muted);
+        .divider {
+            display: flex; align-items: center; text-align: center; margin: 1rem 0;
+            color: var(--text-muted); font-size: 0.85rem; font-weight: 500;
         }
-        .footer a {
-            color: var(--forest); text-decoration: none; font-weight: 700;
-            transition: color 0.2s; border-bottom: 2px solid transparent;
+        .divider::before, .divider::after {
+            content: ''; flex: 1; border-bottom: 1px solid var(--border);
         }
-        .footer a:hover { color: var(--lime-d); border-bottom-color: var(--lime-d); }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        .social-logins {
+            display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;
+        }
+        .social-btn {
+            width: 40px; height: 40px; border-radius: 12px;
+            border: 1px solid var(--border); background: var(--white);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .social-btn:hover { border-color: var(--forest); transform: translateY(-2px); }
+        .social-btn img { width: 20px; height: 20px; }
+
+        .footer-link-bottom { display: block; text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        .footer-link-bottom a { color: var(--forest); font-weight: 700; text-decoration: none; }
 
         .error-message, .success-message {
-            font-size: 0.9rem; font-weight: 500;
-            margin-top: 0.5rem; margin-bottom: 1.5rem;
-            text-align: center; display: none;
+            font-size: 0.8rem; font-weight: 500;
+            margin-top: 0.5rem; text-align: center; display: none;
             padding: 0.5rem; border-radius: 0.5rem;
         }
         .error-message { color: #dc2626; background: #fef2f2; }
         .success-message { color: #16a34a; background: #f0fdf4; }
+
+        /* Highly Detailed Paper Cut SVG Mask */
+        .paper-mask {
+            position: absolute;
+            left: 0; top: 0;
+            width: 75%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .paper-mask svg {
+            width: 100%; height: 100%; display: block;
+        }
+
+        @media (max-width: 768px) {
+            .split-card { max-width: 450px; height: auto; flex-direction: column; background: var(--white); }
+            .form-area { width: 100%; padding: 3rem 2rem; z-index: 10; }
+            .paper-mask { display: none; }
+            .form-row { flex-direction: column; gap: 0; }
+        }
     </style>
 </head>
 <body>
 
-<a href="index.html" class="nav-brand">
-    <img src="../Icons/LOGO.png" alt="NexaCare Logo" style="height: 96px; width: auto; vertical-align: middle;">
-</a>
+    <div class="split-card">
+        
+        <!-- Intricate Paper Cut SVG Background for the Left Side -->
+        <div class="paper-mask">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <filter id="shadow1" x="-20%" y="-20%" width="150%" height="150%">
+                        <feDropShadow dx="3" dy="0" stdDeviation="2" flood-color="#000" flood-opacity="0.6"/>
+                    </filter>
+                    <filter id="shadow2" x="-20%" y="-20%" width="150%" height="150%">
+                        <feDropShadow dx="6" dy="0" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
+                    </filter>
+                    <filter id="shadow3" x="-20%" y="-20%" width="150%" height="150%">
+                        <feDropShadow dx="10" dy="0" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+                    </filter>
+                </defs>
+                
+                <path d="M0,0 L85,0 C95,15 65,30 85,50 C105,70 65,85 85,100 L0,100 Z" fill="#D8E0DC" filter="url(#shadow1)"/>
+                <path d="M0,0 L78,0 C92,18 55,35 78,55 C100,75 55,88 78,100 L0,100 Z" fill="#E8EFEA" filter="url(#shadow2)"/>
+                <path d="M0,0 L70,0 C85,20 45,40 70,60 C95,80 45,92 70,100 L0,100 Z" fill="#FFFFFF" filter="url(#shadow3)"/>
+            </svg>
+        </div>
 
-<div class="container">
-    <div class="header">
-        <h1>Create Account</h1>
-        <p>Set up your patient profile for personalized care</p>
+        <!-- Left: Form Area -->
+        <div class="form-area">
+            <div class="brand-logo">
+                <img src="../Icons/LOGO.png" alt="NexaCare Logo">
+            </div>
+
+            <h1>Create Account</h1>
+            
+            <form id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required placeholder="you@example.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" required min="1" max="120" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="" disabled selected>Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="conditions">Chronic Conditions (Optional)</label>
+                    <input type="text" id="conditions" placeholder="e.g., Diabetes">
+                </div>
+
+                <div class="error-message" id="errorMessage">Registration failed.</div>
+                <div class="success-message" id="successMessage">Registration successful! Redirecting...</div>
+
+                <button type="submit" class="btn">Sign up</button>
+            </form>
+
+            <div class="divider">or sign up with</div>
+
+            <div class="social-logins">
+                <div class="social-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                </div>
+                <div class="social-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#ea3e23" d="M22.5 12c0 5.799-4.701 10.5-10.5 10.5S1.5 17.799 1.5 12 6.201 1.5 12 1.5 22.5 6.201 22.5 12z"/><path fill="#fff" d="M10.224 8.769v6.521c0 .245.195.445.441.445h1.564c.247 0 .441-.2.441-.445v-2.316l3.398 2.535a.442.442 0 0 0 .708-.354v-6.31a.443.443 0 0 0-.708-.355l-3.398 2.536V8.769c0-.245-.194-.444-.441-.444h-1.564c-.246 0-.441.199-.441.444z"/></svg>
+                </div>
+            </div>
+
+            <div class="footer-link-bottom">Already have an account? <a href="login.html">Log in</a></div>
+        </div>
     </div>
 
-    <form id="registerForm">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" required placeholder="John Doe">
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required placeholder="you@example.com">
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" required placeholder="••••••••">
-        </div>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            const payload = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                age: parseInt(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                chronic_conditions: document.getElementById('conditions').value || null
+            };
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="age">Age</label>
-                <input type="number" id="age" required min="1" max="120" placeholder="30">
-            </div>
-            <div class="form-group">
-                <label for="gender">Gender</label>
-                <select id="gender" required>
-                    <option value="" disabled selected>Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="conditions">Chronic Conditions (Optional)</label>
-            <input type="text" id="conditions" placeholder="e.g., Diabetes, Hypertension">
-        </div>
-
-        <div class="error-message" id="errorMessage">Registration failed.</div>
-        <div class="success-message" id="successMessage">Registration successful! Redirecting...</div>
-
-        <button type="submit" class="btn">Create Account</button>
-    </form>
-
-    <div class="footer">
-        Already have an account? <a href="login.html">Sign in</a>
-    </div>
-</div>
-
-<script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        errorMessage.style.display = 'none';
-        successMessage.style.display = 'none';
-        
-        const payload = {
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value,
-            age: parseInt(document.getElementById('age').value),
-            gender: document.getElementById('gender').value,
-            chronic_conditions: document.getElementById('conditions').value || null
-        };
-
-        try {
-            const response = await fetch('http://localhost:8000/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                successMessage.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-            } else {
-                const data = await response.json();
+            try {
+                const response = await fetch('http://localhost:8000/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    successMessage.style.display = 'block';
+                    setTimeout(() => window.location.href = 'login.html', 1500);
+                } else {
+                    const data = await response.json();
+                    errorMessage.textContent = data.detail || 'Registration failed';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (err) {
+                errorMessage.textContent = 'Network error. Is backend running?';
                 errorMessage.style.display = 'block';
-                errorMessage.textContent = data.detail || 'Registration failed';
             }
-        } catch (error) {
-            errorMessage.style.display = 'block';
-            errorMessage.textContent = 'Server error. Is the backend running?';
-        }
-    });
-</script>
-
+        });
+    </script>
 </body>
 </html>

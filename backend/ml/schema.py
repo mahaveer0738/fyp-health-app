@@ -15,3 +15,13 @@ class PredictionResponse(BaseModel):
     triage_level: int
     triage_label: str
     probability: float
+
+class MRIPredictionResponse(BaseModel):
+    diagnosis: str
+    class_key: str
+    confidence: float
+    all_probabilities: dict[str, float]
+    triage_level: int
+    triage_label: str
+    severity: str
+    recommendation: str

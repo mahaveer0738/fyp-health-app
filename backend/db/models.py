@@ -27,6 +27,7 @@ class PatientProfile(Base):
     # Relationships
     user = relationship("User", back_populates="profile")
     visit_history = relationship("VisitHistory", back_populates="patient")
+    mri_predictions = relationship("MRIPrediction", back_populates="patient")
 
 class VisitHistory(Base):
     __tablename__ = "visit_history"
@@ -61,3 +62,23 @@ class VisitHistory(Base):
     # Relationships
     patient = relationship("PatientProfile", back_populates="visit_history")
 
+class MRIPrediction(Base):
+    __tablename__ = "mri_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patient_profiles.id"))
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    # ML Prediction Results
+    diagnosis = Column(String)
+    class_key = Column(String)
+    confidence = Column(Float)
+    
+    # Triage Results
+    triage_level = Column(Integer)
+    triage_label = Column(String)
+    severity = Column(String)
+    recommendation = Column(Text)
+
+    # Relationships
+    patient = relationship("PatientProfile", back_populates="mri_predictions")
